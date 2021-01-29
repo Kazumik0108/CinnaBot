@@ -43,10 +43,27 @@ module.exports = class addrole extends Command {
     async run(message, {roleName, roleColor, rolePerms}) {
         // Only allow members with manage roles to use this command
         const user = message.guild.member(message.author);
-        const userPerms = user.permissions.toArray();
-        let userFlags = ['MANAGE_ROLES'];
-        userFlags = userFlags.filter(flag => !userPerms.some(perm => perm === flag));
-        if (userFlags.length > 0) return message.reply("you are not allowed to create roles.");
+        let userRole = user.roles.cache.filter(role => role.permissions.toArray().includes("MANAGE_ROLES") || role.permissions.toArray().includes("ADMINISTRATOR"));
+        userRole = Array.from(userRole.values());
+        if (userRole.length > 1) {
+            userRole.sort(function(a, b) {
+                return (a.rawPosition > b.rawPosition) ? -1 : 1;
+            });
+        }
+        userRole = userRole[0];
+        if (!userRole) return message.reply("you are not allowed to add roles.").then(reply => reply.delete({ timeout: 10*1000}));
+
+        // get the bots highest role with the MANAGE_ROLES permission
+        const bot = message.guild.member(message.client.user);
+        let botRole = bot.roles.cache.filter(role => role.permissions.toArray().includes("MANAGE_ROLES") || role.permissions.toArray().includes("ADMINISTRATOR"));
+        botRole = Array.from(botRole.values());
+        if (botRole.length > 1) {
+            botRole.sort(function(a, b) {
+                return (a.rawPosition > b.rawPosition) ? -1 : 1;
+            });
+        }
+        botRole = botRole[0];
+        if (!botRole) return message.reply("I do not have the \`MANAGE_ROLES\` permission for this command.").then(reply => reply.delete({ timeout: 10*1000}));
 
         // Abort command if roleName already exists in the server
         let name = await message.guild.roles.fetch()
@@ -100,7 +117,7 @@ module.exports = class addrole extends Command {
                             permissions: perms
                         }
                     })
-                        .then(role => message.reply(`The role <@&${role.id}> has been created.`).then(reply => reply.delete({ timeout: 5000 })))
+                        .then(role => message.reply(`The role <@&${role.id}> has been created successfully.`).then(reply => reply.delete({ timeout: 5000 })))
                         .catch(console.error);
                 } else {
                     message.reply("canceling command.").then(reply => reply.delete({ timeout: 3000 }));
