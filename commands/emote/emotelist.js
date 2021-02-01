@@ -1,23 +1,11 @@
 // emotelist.js
 
 ///// imports
-const { Command } = require('discord.js-commando');
+const { MessageEmbed } = require("discord.js");
+const { Command } = require("discord.js-commando");
 
 ///// functions
-function sortEmotes(emotes) {
-    let sorted = emotes.sort((a, b) => {
-        let nameA = a.name.toLowerCase();
-        let nameB = b.name.toLowerCase();
-        return (nameA < nameB) ? -1 : 1;
-    });
-    return sorted;
-}
-
-function getEmoteFormat(emote) {
-    return (emote.animated) ? `<a:`+emote.name+`:`+emote.id+`>` : `<:`+emote.name+`:`+emote.id+`>`
-}
-    
-function setEmoteArray(emotes) {
+function emoteToTextArray(emotes) {
     // split emote array into line groups of 5 columns
     let array1 = [];
     for (let [column, value] of emotes.entries()) {
@@ -27,7 +15,7 @@ function setEmoteArray(emotes) {
             array1[array1.length-1].push(value);
         }
     }
-    array1 = array1.map(emote => emote.join(''));
+    array1 = array1.map(emote => emote.join(""));
 
     // split emote array further into message groups of 5 rows
     let array2 = [];
@@ -45,13 +33,15 @@ function setEmoteArray(emotes) {
 module.exports = class gemInfo extends Command {
     constructor(client) {
         super(client, {
-            name: 'emotelist',
-            group: 'emote',
-            memberName: 'emotelist',
-            description: 'Sends the list of emotes for the messaged server.',
-            format: '!emotelist',
+            name: "emotelist",
+            group: "emote",
+            memberName: "emotelist",
+            description: "Sends the list of emotes from a server. The author can only show emotes from servers they share with the bot. Send \"0\" to show the list of emotes in the current server.",
+            format: "+emotelist",
+            examples: ["+emotelist", "+emotelist 0"],
             guildOnly: true,
-            examples: ['!emotelist']
+            clientPermissions: ["SEND_MESSAGES"],
+            userPermissions: ["MANAGE_EMOJIS", "MANAGE_MESSAGES"]
         });
     }
 
@@ -59,38 +49,92 @@ module.exports = class gemInfo extends Command {
         // return early if author is bot
         if (message.author.bot) return;
 
-        // check if the OP has mod-like permissions in the current server
-        const member = message.guild.member(message.author);
-        const memberPerms = member.permissions.toArray();
-        const flags = ['ADMINISTRATOR', 'MANAGE_CHANNELS', 'MANAGE_GUILD', 'MANAGE_ROLES'];
-        const modCheck = memberPerms.some(perm => flags.some(flag => flag === perm));
-        if (!modCheck) return message.reply('only Sensei can use me like that.');
+        // if the user entered "0", send the emotes for the messaged server
+        // else ask the users to select from a server they share with the bot
+        const args = message.content.split(/ +/);
+        if (args[args.length-1] === "0") {
+            const guild = message.guild;
+            sendGuildEmotes(guild);
 
-        // get guilds from client
-        const guilds = message.client.guilds.cache;
+        } else {
+            // get all servers from client that the author is in
+            const cachedGuilds = message.client.guilds.cache;
+            const userGuilds = await cachedGuilds.map(async guild => {
+                const userGuild = await guild.members.fetch(message.author.id)
+                    .then(guildMember => {
+                        return guild;
+                    })
+                    .catch(error => {
+                        return null;
+                    });
+                return userGuild;
+            });
 
-        // send the emotes list for the messaged server
-        guilds.forEach(guild => {
-            if (guild.id !== message.guild.id) return;
+            Promise.all(userGuilds).then(Guilds => {
+                // remove the servers that the user is not in
+                let guilds = Guilds.filter(Guild => Guild !== null);
+                
+                // sort remaining servers by name, then place the messaged server at front
+                guilds = guilds.sort((a, b) => {
+                    return (a.name.toLowerCase() < b.name.toLowerCase()) ? -1 : 1;
+                }).sort((a, b) => {
+                    return (a.name === message.guild.name) ? -1 : 1;
+                });
 
-            // first, sort the list of static and animated emotes
-            let emoteStatic = sortEmotes(guild.emojis.cache.filter(emote => !emote.animated));
-            let emoteAnimated = sortEmotes(guild.emojis.cache.filter(emote => emote.animated));
+                // ask the user to choose the server to display emotes for
+                const guildNames = guilds.map((guild, index) => `${index}: ${guild.name}`);
+                message.reply(`choose the server number below to display the emotes from. Send \`cancel\` to abort this command.\n\`\`\`\n${guildNames.join("\n")}\n\`\`\``).then(msg => msg.delete({ timeout: 20*1000 }));
+                
+                const filter = (msg) => (msg.author.id === message.author.id) && (msg.content.toLowerCase() === "end" || (0 <= parseInt(msg.content, 10) && parseInt(msg.content, 10) < guildNames.length));
+                const collector = message.channel.createMessageCollector(filter, { timer: 30*1000 });
 
-            // second, convert each emote element into its formatted form
-            emoteStatic = emoteStatic.map(emote => getEmoteFormat(emote));
-            emoteAnimated = emoteAnimated.map(emote => getEmoteFormat(emote));
-            
-            // third, format the array into a message
-            let textStatic = setEmoteArray(emoteStatic);
-            let textAnimated = setEmoteArray(emoteAnimated);
+                collector.on("collect", collect => {
+                    // ends the collector when a value index is given or when "end" is given
+                    if (collect.content.toLowerCase() === "end") collector.stop();
+                    if (guilds[collect.content]) {
+                        const guild = guilds[collect.content];
+                        sendGuildEmotes(guild);
+                        collector.stop();
+                    }
+                });
 
-            // fourth & finally, delete the message command & send the new message to the channel
-            message.delete()
-                .then(message.say(`\*\*List of static emotes \(${emoteStatic.length}\/100\):\*\*`))
-                .then(textStatic.forEach(text => message.say(text)))
-                .then(message.say(`\*\*List of animated emotes \(${emoteAnimated.length}\/100\):\*\*`))
-                .then(textAnimated.forEach(text => message.say(text)))
-        });
+                collector.on("end", collected => {
+                    // delete all collected messages
+                    collected.forEach(msg => msg.delete({ timeout: 2000 }));
+                })
+            });
+        }
+
+        
+
+
+        ///// functions
+        function sendGuildEmotes(guild) {
+            // send the list of emotes from the specified guild object
+            const emotes = guild.emojis.cache;
+                            
+            const emoteStatic = emotes.filter(emote => !emote.animated).sort((a, b) => {
+                return (a.name.toLowerCase() < b.name.toLowerCase()) ? -1 : 1;
+            });
+            const emoteAnimated = emotes.filter(emote => emote.animated).sort((a, b) => {
+                return (a.name.toLowerCase() < b.name.toLowerCase()) ? -1 : 1;
+            });
+        
+            const textStatic = emoteToTextArray(emoteStatic.map(emote => (emote.animated) ? `<a:`+emote.name+`:`+emote.id+`>` : `<:`+emote.name+`:`+emote.id+`>`));
+            const textAnimated = emoteToTextArray(emoteAnimated.map(emote => (emote.animated) ? `<a:`+emote.name+`:`+emote.id+`>` : `<:`+emote.name+`:`+emote.id+`>`));
+        
+            // send the emotes into the messaged channel
+            const embedMessage = new MessageEmbed()
+                .setTitle(`${guild.name} Emote List`)
+                .setThumbnail(guild.iconURL())
+                .addField(`Static Emotes`, `(${emoteStatic.size}/100)`, true)
+                .addField(`Animated Emotes`, `(${emoteAnimated.size}/100)`, true)
+
+            message.say(embedMessage)
+                .then(() => message.say(`\*\*Static Emotes\*\*`))
+                .then(() => textStatic.forEach(text => message.say(text)))
+                .then(() => message.say(`\*\*Animated Emotes\*\*`))
+                .then(() => textAnimated.forEach(text => message.say(text)))
+        }
     }
 };
