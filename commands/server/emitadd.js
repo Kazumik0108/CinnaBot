@@ -1,9 +1,9 @@
-// addrole.js
+// emitadd.js
 
 ///// imports
 const { Command } = require('discord.js-commando');
 
-module.exports = class addrole extends Command {
+module.exports = class emitadd extends Command {
     constructor(client) {
         super(client, {
             name: "emitadd",

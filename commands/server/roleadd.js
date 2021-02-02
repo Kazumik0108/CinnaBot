@@ -1,21 +1,39 @@
-// addrole.js
+// roleadd.js
+
+///// imports
+const { MessageEmbed } = require("discord.js")
+
+///// functions
+function getMessageEmbed(name, hexColor, perms) {
+    const embedMessage = new MessageEmbed()
+        .setTitle("Role Properties")
+        .setDescription(name)
+        .setColor(hexColor)
+        .addField("Color", hexColor, true)
+        .addField("Admin", perms.includes("ADMINISTRATOR").toString().toUpperCase(), true)
+        .addField("Permissions", `${perms.join("\n")}`)
+    return embedMessage;
+}
+
 
 ///// imports
 const { Command } = require("discord.js-commando");
 const roleperms = require("../../info/roleperms.json");
 
-module.exports = class addrole extends Command {
+module.exports = class roleadd extends Command {
     constructor(client) {
         super(client, {
-            name: "addrole",
+            name: "roleadd",
             group: "server",
-            memberName: "addrole",
+            memberName: "roleadd",
             description: "Creates a named role within the server with optional colors and permissions.",
             guildOnly: true,
+            clientPermissions: ["MANAGE_ROLES"],
+            userPermissions: ["MANAGE_ROLES"],
             examples: [
-                "+addrole \`<roleName>\`",
-                "+addrole \`<roleName>\` \`<roleColor>\`",
-                "+addrole \`<roleName>\` \`<roleColor>\` \`<rolePerm>\`,\`<rolePerm>\`"
+                "+roleadd \`<roleName>\`",
+                "+roleadd \`<roleName>\` \`<roleColor>\`",
+                "+roleadd \`<roleName>\` \`<roleColor>\` \`<rolePerm>\`,\`<rolePerm>\`"
             ],
             args: [
                 {
@@ -41,35 +59,11 @@ module.exports = class addrole extends Command {
     }
 
     async run(message, {roleName, roleColor, rolePerms}) {
-        // Only allow members with manage roles to use this command
-        const user = message.guild.member(message.author);
-        let userRole = user.roles.cache.filter(role => role.permissions.toArray().includes("MANAGE_ROLES") || role.permissions.toArray().includes("ADMINISTRATOR"));
-        userRole = Array.from(userRole.values());
-        if (userRole.length > 1) {
-            userRole.sort(function(a, b) {
-                return (a.rawPosition > b.rawPosition) ? -1 : 1;
-            });
-        }
-        userRole = userRole[0];
-        if (!userRole) return message.reply("you are not allowed to add roles.").then(reply => reply.delete({ timeout: 10*1000}));
-
-        // get the bots highest role with the MANAGE_ROLES permission
-        const bot = message.guild.member(message.client.user);
-        let botRole = bot.roles.cache.filter(role => role.permissions.toArray().includes("MANAGE_ROLES") || role.permissions.toArray().includes("ADMINISTRATOR"));
-        botRole = Array.from(botRole.values());
-        if (botRole.length > 1) {
-            botRole.sort(function(a, b) {
-                return (a.rawPosition > b.rawPosition) ? -1 : 1;
-            });
-        }
-        botRole = botRole[0];
-        if (!botRole) return message.reply("I do not have the \`MANAGE_ROLES\` permission for this command.").then(reply => reply.delete({ timeout: 10*1000}));
-
         // Abort command if roleName already exists in the server
         let name = await message.guild.roles.fetch()
             .then(roles => {
                 if (roles.cache.some(role => role.name === roleName)) {
-                    message.reply(`There is already a role with the name \`${roleName}\`. Please try another name.`);
+                    message.reply(`There is already a role with the name \`${roleName}\`. Please try another name.`).then(msg => msg.delete({ timeout: 5000 }));
                     return null;
                 } else return roleName;
             })
@@ -96,12 +90,9 @@ module.exports = class addrole extends Command {
         // confirm with the user the role name, color, and additional permissions
         // proceed with creating the role if confirmed
         // cancel the command if rejected
-        const msg = await message.reply(`verify the properties for the role you are creating.\nReact with 👍 to create the role. React with 👎 to cancel the command.\n`+
-            `\`\`\`\n`+
-            `Role Name: ${name}\n`+
-            `Role Color: ${hexColor}\n`+
-            `Role Permissions: ${perms}\n`+
-            `\`\`\``);
+        let embedMessage = getMessageEmbed(name, hexColor, perms);
+        let reply = await message.reply("verify the properties for the role you are creating.\nReact with 👍 to create the role. React with 👎 to cancel the command.")
+        let msg = await message.say(embedMessage);
         msg.react("👍").then(() => msg.react("👎"));
 
         const filter = (reaction, user) => ["👍", "👎"].includes(reaction.emoji.name) && user.id === message.author.id;
@@ -126,6 +117,9 @@ module.exports = class addrole extends Command {
             .catch(() => {
                 message.reply("the command has timed out.").then(reply => reply.delete({ timeout: 5000 }));
             })
-            .finally(() => msg.delete({ timeout: 3000 }))
+            .finally(() => {
+                reply.delete({ timeout: 3000 })
+                msg.delete({ timeout: 3000 })
+            })
     }
 };

@@ -1,4 +1,4 @@
-eval// rule.js
+// preembed.js
 
 ///// imports
 const { MessageEmbed } = require("discord.js");
