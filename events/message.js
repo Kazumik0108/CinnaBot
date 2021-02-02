@@ -62,9 +62,7 @@ module.exports = async (client, message) => {
 
         // bot & @everyone has required permissions if the code reaches this block
         message.delete().catch( error => {
-            if (error.code !== Discord.Constants.APIError.UNKNOWN_MESSAGE) {
-                console.error("Failed to delete the message:", error);
-            }
+            console.error("Failed to delete the message:", error);
         });
         const webhooks = await message.channel.fetchWebhooks();
         const webhook = webhooks.first();
