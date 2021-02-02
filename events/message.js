@@ -61,7 +61,11 @@ module.exports = async (client, message) => {
         if (everyoneFlags.length > 0) return message.reply(`the role \`\@everyone\` is missing \`${everyoneFlags}\` permissions in this server for this command.`);
 
         // bot & @everyone has required permissions if the code reaches this block
-        message.delete();
+        message.delete().catch( error => {
+            if (error.code !== Discord.Constants.APIError.UNKNOWN_MESSAGE) {
+                console.error("Failed to delete the message:", error);
+            }
+        });
         const webhooks = await message.channel.fetchWebhooks();
         const webhook = webhooks.first();
     
