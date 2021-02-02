@@ -29,6 +29,23 @@ function emoteToTextArray(emotes) {
     return array2;
 }
 
+function getDate() {
+    const today = new Date();
+    let year = "" + today.getFullYear();
+    let month = "" + today.getMonth();
+    let day = "" + today.getDay();
+    let hour = "" + today.getHours();
+    let min = "" + today.getMinutes();
+    let ampm = (hour < 12) ? "AM" : "PM";
+    let timezone = "EST"
+
+    if (month.length < 2) month = "0" + month;
+    if (day.length < 2) day = "0" + day;
+    if (hour >= 12) hour = "" + hour % 12;
+
+    return `${year}/${month}/${day} @ ${hour}:${min} ${ampm} ${timezone}`;
+}
+
 ///// exports
 module.exports = class gemInfo extends Command {
     constructor(client) {
@@ -127,6 +144,7 @@ module.exports = class gemInfo extends Command {
             const embedMessage = new MessageEmbed()
                 .setTitle(`${guild.name} Emote List`)
                 .setThumbnail(guild.iconURL())
+                .setFooter(`Updated ${getDate()}`)
                 .addField(`Static Emotes`, `(${emoteStatic.size}/100)`, true)
                 .addField(`Animated Emotes`, `(${emoteAnimated.size}/100)`, true)
 
