@@ -1,6 +1,9 @@
 // message.js
 
-///// functions
+///// imports
+const configFile = "config.json";
+const { reactions } = require(`../${configFile}`);
+
 
 ///// exports
 module.exports = async (client, message) => {
@@ -8,17 +11,22 @@ module.exports = async (client, message) => {
     if (message.author.bot || message.channel.type === 'dm') return;
 
     // Emote replace block
-    // Attempt to replace emotes in a message by a non-nitro user by checking the contents of a substring enclosed by a pair of colons, e.g. :emote:
-    // To prevent nitro users from using this command, replacement will not be attempted if there is at least one escape character or backtick in the message
-    // emote name inputs are case-sensitive! --- overridden by modCheck
+    // Attempt to replace emotes in a message by a user by checking the contents of a substring enclosed by a pair of colons, e.g. :emote:
+    // Ignore messages with any code blocks or escape characters
     let emoteCheck = message.content.split(/\:/).length > 2 && message.content.split(/\`/).length <= 1 && message.content.split(/\\/).length <= 1; 
     if (emoteCheck) {
         const emoteRegex = /<a?:\w+:\d+>|(?<!\\):(\w+):/g;
         let newMessage = message.content.replace(emoteRegex, replaceMessageEmotes);
-        // return if there were no changes to the message
-        if (message.content === newMessage) return;
-        await sendMessageWebhook(message, newMessage);
+        // only send webhook if the message content is different
+        if (message.content !== newMessage) sendMessageWebhook(newMessage);
     }
+
+    // Bot reaction block
+    Object.values(reactions).forEach(reactionGroup => {
+        const match = reactionGroup.some(reaction => message.content.includes(reaction));
+        if (match) reactionGroup.forEach(reaction => message.react(reaction));
+    });
+
 
 
     ///// functions
@@ -35,16 +43,15 @@ module.exports = async (client, message) => {
     }
     
     function getMatchEmojis(substring, match) {
-        const nameFunction = emote => emote.name.toLowerCase() === match.toLowerCase();
         // prioritize the first emote found in the messaged server, otherwise get the first match in other servers
         let emoteMatch = message.guild.emojis.cache.find(nameFunction);
         if (!emoteMatch) {
-            emoteMatch = client.guilds.cache.flatMap(guild => guild.emojis.cache).find(nameFunction);
+            emoteMatch = client.guilds.cache.flatMap(guild => guild.emojis.cache).find(emote => emote.name.toLowerCase() === match.toLowerCase());
         }
         return emoteMatch;
     }
 
-    async function sendMessageWebhook(message, content) {
+    async function sendMessageWebhook(content) {
         // Deletes the OP's message and sends a webhook mimicking the OP
         // Function requires the bot to have MANAGE_MESSAGES and MANAGE_WEBHOOKS permissions
         const bot = message.guild.member(client.user);
