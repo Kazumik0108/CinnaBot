@@ -7,26 +7,28 @@ const { reactions } = require(`../${configFile}`);
 
 ///// exports
 module.exports = async (client, message) => {
-    // return early if author is bot or the message is in a DM
-    if (message.author.bot || message.channel.type === 'dm') return;
-
     // Emote replace block
     // Attempt to replace emotes in a message by a user by checking the contents of a substring enclosed by a pair of colons, e.g. :emote:
     // Ignore messages with any code blocks or escape characters
     let emoteCheck = message.content.split(/\:/).length > 2 && message.content.split(/\`/).length <= 1 && message.content.split(/\\/).length <= 1; 
+    const emoteRegex = /<a?:\w+:\d+>|(?<!\\):(\w+):/g;
     if (emoteCheck) {
-        const emoteRegex = /<a?:\w+:\d+>|(?<!\\):(\w+):/g;
         let newMessage = message.content.replace(emoteRegex, replaceMessageEmotes);
         // only send webhook if the message content is different
         if (message.content !== newMessage) sendMessageWebhook(newMessage);
     }
 
     // Bot reaction block
-    Object.values(reactions).forEach(reactionGroup => {
-        const match = reactionGroup.some(reaction => message.content.includes(reaction));
-        if (match) reactionGroup.forEach(reaction => message.react(reaction));
-    });
-
+    // React only to messages containing valid emotes and no extra text
+    if (message.content.split(/<a?:\w+:\d+>/g).every(text => !text.match(/\w/))) {
+        Object.values(reactions).forEach(reactionGroup => {
+            const match = reactionGroup.some(reaction => message.content.includes(reaction));
+            if (match) reactionGroup.forEach(reaction => message.react(reaction));
+        });
+    }
+    
+    // prevent following commands if author is bot or the message is in a DM
+    if (message.author.bot || message.channel.type === 'dm') return;
 
 
     ///// functions
@@ -44,7 +46,7 @@ module.exports = async (client, message) => {
     
     function getMatchEmojis(substring, match) {
         // prioritize the first emote found in the messaged server, otherwise get the first match in other servers
-        let emoteMatch = message.guild.emojis.cache.find(nameFunction);
+        let emoteMatch = message.guild.emojis.cache.find(emote => emote.name.toLowerCase() === match.toLowerCase());
         if (!emoteMatch) {
             emoteMatch = client.guilds.cache.flatMap(guild => guild.emojis.cache).find(emote => emote.name.toLowerCase() === match.toLowerCase());
         }
