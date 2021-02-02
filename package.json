@@ -1,6 +1,10 @@
 {
   "name": "CinnaBot",
+<<<<<<< HEAD
+  "version": "2.4.0",
+=======
   "version": "2.3.0",
+>>>>>>> main
   "description": "Cinnabar has entered the Gem-to-Lunarian transformation machine.",
   "main": "index.js",
   "author": "Kazumik",
