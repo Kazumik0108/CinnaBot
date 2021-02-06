@@ -1,13 +1,14 @@
 // guildMemberAdd.js
-import { GuildMember, MessageEmbed } from 'discord.js';
+import { GuildMember, MessageEmbed, TextChannel } from 'discord.js';
 import { CommandoClient } from 'discord.js-commando';
+
 
 module.exports = async (client: CommandoClient, member: GuildMember) => {
     // Note: welcome messages are enabled for Rin's Solo Camp server only, whose guild id is shown below
     if (member.guild.id === '725009170839109682') {
         // log the join event to #welcome-logs
-        const modlog: any = client.channels.cache.get('725030145840382053');
-        if (typeof modlog !== 'undefined') modlog.send(`${member.user.username} has joined! <:RinHi:725291274013376553>`);
+        const welcomeLog = client.channels.cache.get('725030145840382053') as TextChannel;
+        if (typeof welcomeLog !== 'undefined') welcomeLog.send(`${member.user.username} has joined! <:RinHi:725291274013376553>`);
 
         // do not send embed message if the user is a bot!
         if (member.user.bot) return;
@@ -25,7 +26,7 @@ module.exports = async (client: CommandoClient, member: GuildMember) => {
             .setImage('https://raw.githubusercontent.com/Kazumik0108/CinnaBot/main/images/welcome/RinWave1.gif');
 
         // send the embed message to #simp-central
-        const channel: any = client.channels.cache.get('725009172357316698');
-        channel.send(embedMessage);
+        const welcomeChannel = client.channels.cache.get('725009172357316698') as TextChannel;
+        welcomeChannel.send(embedMessage);
     }
 };

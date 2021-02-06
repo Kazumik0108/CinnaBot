@@ -41,7 +41,7 @@ module.exports = async (client: CommandoClient, message: CommandoMessage) => {
     function replaceMessageEmotes(substring: string, match: string): string {
         // Returns a string after attempting to replace the emote substrings of the original message
         if (match) {
-            const emoteMatch = getMatchEmojis(substring, match);
+            const emoteMatch = getMatchEmojis(match);
             if (emoteMatch) {
                 return (emoteMatch.animated) ? `<a:${emoteMatch.name}:${emoteMatch.id}>` : `<:${emoteMatch.name}:${emoteMatch.id}>`;
             }
@@ -50,7 +50,7 @@ module.exports = async (client: CommandoClient, message: CommandoMessage) => {
         return substring;
     }
 
-    function getMatchEmojis(substring: string, match: string): GuildEmoji | undefined {
+    function getMatchEmojis(match: string): GuildEmoji | undefined {
         // If the matched emote exists in the server, use that emote
         // Otherwise, try to find it in another server
         let emoteMatch = (message.guild as Guild).emojis.cache.find(emote => emote.name.toLowerCase() === match.toLowerCase());

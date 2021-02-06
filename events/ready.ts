@@ -48,8 +48,8 @@ module.exports = async (client: CommandoClient) => {
 
     // reaction roles: put messages into cache from each guild
     reactEmotes.forEach(emote => {
-        const guildChannel = client.channels.cache.get(emote.message?.channel?.id!);
-        (guildChannel as TextChannel).messages.fetch(emote.message?.id!, true, false)
+        const guildChannel = client.channels.cache.get(emote.message?.channel?.id!) as TextChannel;
+        guildChannel.messages.fetch(emote.message?.id!, true, false)
             .then(msg => console.log(`Added message id ${msg.id} to cache from server ${msg.guild?.name} in channel ${(msg.channel as TextChannel).name}.`))
             .catch(console.error);
     });
