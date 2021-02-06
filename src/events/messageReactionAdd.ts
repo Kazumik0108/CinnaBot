@@ -1,4 +1,4 @@
-// messageReactionAdd.js
+// messageReactionAdd.ts
 import { Guild, GuildMember, MessageReaction, Role, TextChannel, User } from 'discord.js';
 import { CommandoClient } from 'discord.js-commando';
 import { reactEmotes } from '../info/server/reactionroles';

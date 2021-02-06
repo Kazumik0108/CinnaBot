@@ -1,3 +1,4 @@
+// reactions.ts
 interface reactionGroup {
     name: string;
     emotes: Array<string>;

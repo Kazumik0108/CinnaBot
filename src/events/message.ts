@@ -1,4 +1,4 @@
-// message.js
+// message.ts
 import { Guild, GuildEmoji } from 'discord.js';
 import { CommandoClient, CommandoMessage } from 'discord.js-commando';
 import { reactions } from '../info/server/reactions';

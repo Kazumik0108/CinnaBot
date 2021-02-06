@@ -1,4 +1,4 @@
-// ready.js
+// ready.ts
 import { join } from 'path';
 import { reactEmotes } from '../info/server/reactionroles';
 import { twitterUsers } from '../info/server/twitter';

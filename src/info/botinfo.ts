@@ -1,3 +1,4 @@
+// botinfo.ts
 /*
 ID  NAME        FORMAT	                EXAMPLE
 0   Game	    Playing {name}	        "Playing Rocket League"

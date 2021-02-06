@@ -1,4 +1,4 @@
-// guildMemberAdd.js
+// guildMemberAdd.ts
 import { GuildMember, MessageEmbed, TextChannel } from 'discord.js';
 import { CommandoClient } from 'discord.js-commando';
 

@@ -1,3 +1,4 @@
+// reactionroles.ts
 interface reactEntity {
     id: string;
     name?: string;
