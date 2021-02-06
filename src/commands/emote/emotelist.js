@@ -12,7 +12,7 @@ function emoteToTextArray(emotes) {
         if (column % 5 === 0) {
             array1.push([value]);
         } else {
-            array1[array1.length-1].push(value);
+            array1[array1.length - 1].push(value);
         }
     }
     array1 = array1.map(emote => emote.join(""));
@@ -23,7 +23,7 @@ function emoteToTextArray(emotes) {
         if (row % 5 === 0) {
             array2.push([value]);
         } else {
-            array2[array2.length-1].push(value);
+            array2[array2.length - 1].push(value);
         }
     }
     return array2;
@@ -69,7 +69,7 @@ module.exports = class gemInfo extends Command {
         // if the user entered "0", send the emotes for the messaged server
         // else ask the users to select from a server they share with the bot
         const args = message.content.split(/ +/);
-        if (args[args.length-1] === "0") {
+        if (args[args.length - 1] === "0") {
             const guild = message.guild;
             sendGuildEmotes(guild);
 
@@ -90,7 +90,7 @@ module.exports = class gemInfo extends Command {
             Promise.all(userGuilds).then(Guilds => {
                 // remove the servers that the user is not in
                 let guilds = Guilds.filter(Guild => Guild !== null);
-                
+
                 // sort remaining servers by name, then place the messaged server at front
                 guilds = guilds.sort((a, b) => {
                     return (a.name.toLowerCase() < b.name.toLowerCase()) ? -1 : 1;
@@ -100,10 +100,10 @@ module.exports = class gemInfo extends Command {
 
                 // ask the user to choose the server to display emotes for
                 const guildNames = guilds.map((guild, index) => `${index}: ${guild.name}`);
-                message.reply(`choose the server number below to display the emotes from. Send \`cancel\` to abort this command.\n\`\`\`\n${guildNames.join("\n")}\n\`\`\``).then(msg => msg.delete({ timeout: 20*1000 }));
-                
+                message.reply(`choose the server number below to display the emotes from. Send \`cancel\` to abort this command.\n\`\`\`\n${guildNames.join("\n")}\n\`\`\``).then(msg => msg.delete({ timeout: 20 * 1000 }));
+
                 const filter = (msg) => (msg.author.id === message.author.id) && (msg.content.toLowerCase() === "end" || (0 <= parseInt(msg.content, 10) && parseInt(msg.content, 10) < guildNames.length));
-                const collector = message.channel.createMessageCollector(filter, { timer: 30*1000 });
+                const collector = message.channel.createMessageCollector(filter, { timer: 30 * 1000 });
 
                 collector.on("collect", collect => {
                     // ends the collector when a value index is given or when "end" is given
@@ -122,24 +122,24 @@ module.exports = class gemInfo extends Command {
             });
         }
 
-        
+
 
 
         ///// functions
         function sendGuildEmotes(guild) {
             // send the list of emotes from the specified guild object
             const emotes = guild.emojis.cache;
-                            
+
             const emoteStatic = emotes.filter(emote => !emote.animated).sort((a, b) => {
                 return (a.name.toLowerCase() < b.name.toLowerCase()) ? -1 : 1;
             });
             const emoteAnimated = emotes.filter(emote => emote.animated).sort((a, b) => {
                 return (a.name.toLowerCase() < b.name.toLowerCase()) ? -1 : 1;
             });
-        
-            const textStatic = emoteToTextArray(emoteStatic.map(emote => (emote.animated) ? `<a:`+emote.name+`:`+emote.id+`>` : `<:`+emote.name+`:`+emote.id+`>`));
-            const textAnimated = emoteToTextArray(emoteAnimated.map(emote => (emote.animated) ? `<a:`+emote.name+`:`+emote.id+`>` : `<:`+emote.name+`:`+emote.id+`>`));
-        
+
+            const textStatic = emoteToTextArray(emoteStatic.map(emote => (emote.animated) ? `<a:` + emote.name + `:` + emote.id + `>` : `<:` + emote.name + `:` + emote.id + `>`));
+            const textAnimated = emoteToTextArray(emoteAnimated.map(emote => (emote.animated) ? `<a:` + emote.name + `:` + emote.id + `>` : `<:` + emote.name + `:` + emote.id + `>`));
+
             // send the emotes into the messaged channel
             const embedMessage = new MessageEmbed()
                 .setTitle(`${guild.name} Emote List`)

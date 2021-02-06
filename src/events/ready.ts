@@ -1,7 +1,7 @@
 // ready.js
 import { join } from 'path';
-import { reactEmotes } from '../server/reactionroles';
-import { twitterUsers } from '../server/twitter';
+import { reactEmotes } from '../info/server/reactionroles';
+import { twitterUsers } from '../info/server/twitter';
 import { statuses } from '../info/botInfo';
 import { ClientUser, TextChannel } from 'discord.js';
 import { CommandoClient } from 'discord.js-commando';

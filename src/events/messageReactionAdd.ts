@@ -1,7 +1,7 @@
 // messageReactionAdd.js
 import { Guild, GuildMember, MessageReaction, Role, TextChannel, User } from 'discord.js';
 import { CommandoClient } from 'discord.js-commando';
-import { reactEmotes } from '../server/reactionroles';
+import { reactEmotes } from '../info/server/reactionroles';
 
 
 module.exports = async (client: CommandoClient, reaction: MessageReaction) => {

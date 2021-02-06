@@ -1,7 +1,7 @@
 // message.js
 import { Guild, GuildEmoji } from 'discord.js';
 import { CommandoClient, CommandoMessage } from 'discord.js-commando';
-import { reactions } from '../server/reactions';
+import { reactions } from '../info/server/reactions';
 
 
 module.exports = async (client: CommandoClient, message: CommandoMessage) => {
