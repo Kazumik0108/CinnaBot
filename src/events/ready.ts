@@ -44,8 +44,10 @@ export default (client: CommandoClient) => {
         ])
         .registerDefaultGroups()
         .registerDefaultCommands()
-        .registerCommandsIn(join(__dirname, '../commands/'));
-
+        .registerCommandsIn({
+            filter: /^([^.].*)\.(js|ts)$/,
+            dirname: join(__dirname, '../commands/'),
+        });
 
     // reaction roles: put unique messages into cache from each guild
     reactMessages.forEach(message => {
