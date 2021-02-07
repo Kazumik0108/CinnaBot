@@ -1,10 +1,10 @@
 // message.ts
-import { Guild, GuildEmoji } from 'discord.js';
+import { Guild, GuildEmoji, GuildMember, TextChannel, Webhook } from 'discord.js';
 import { CommandoClient, CommandoMessage } from 'discord.js-commando';
 import { reactions } from '../info/server/reactions';
 
 
-module.exports = async (client: CommandoClient, message: CommandoMessage) => {
+export default async (client: CommandoClient, message: CommandoMessage) => {
     // Prevent the following commands if the message author is a bot or the message is in a DM
     if (message.author.bot || message.channel.type === 'dm') return;
 
@@ -60,7 +60,7 @@ module.exports = async (client: CommandoClient, message: CommandoMessage) => {
         return emoteMatch;
     }
 
-    function sendMessageWebhook(content: string): void {
+    async function sendMessageWebhook(content: string): Promise<void> {
         // Deletes the OP's message and sends a webhook mimicking the OP
 
         // Function requires the bot to have MANAGE_MESSAGES and MANAGE_WEBHOOKS permissions
@@ -89,20 +89,18 @@ module.exports = async (client: CommandoClient, message: CommandoMessage) => {
             console.error('Failed to delete the message:', error);
         });
 
-        // @ts-ignore because this is never a DM channel
-        const webhook = message.channel.fetchWebhooks().then(webhooks => webhooks.first());
+        const webhook = await (message.channel as TextChannel).fetchWebhooks().then(webhooks => webhooks.first()) as Webhook;
 
         // get user info from the message
-        const member = (message.guild as Guild).member(message.author);
-        const nickname = member ? member.displayName : null;
+        const member = (message.guild as Guild).member(message.author) as GuildMember;
+        const nickname = member ? member.displayName : message.author.username;
         const avatar = message.author.displayAvatarURL();
 
         if (typeof webhook === 'undefined') {
             // no webhook exists in this channel, so create one
-            // @ts-ignore because this is never a DM channel
-            message.channel.createWebhook('CinnaBot')
-                .then((channelWebhook: any) => {
-                    channelWebhook.send(content, {
+            ((message.channel as TextChannel).createWebhook('CinnaBot') as Promise<Webhook>)
+                .then(newWebhook => {
+                    newWebhook.send(content, {
                         username: nickname,
                         avatarURL: avatar,
                     });

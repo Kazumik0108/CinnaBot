@@ -15,7 +15,7 @@ interface reactMessage extends reactEntity {
     channel?: reactChannel;
 }
 
-export interface reactChannel extends reactEntity {
+interface reactChannel extends reactEntity {
     messages?: Array<reactMessage>;
     guild?: reactGuild;
 }
@@ -37,6 +37,7 @@ const reactGuilds: Array<reactGuild> = [
                 messages: [
                     {
                         id: '804187136793378847',
+                        name: 'rules',
                         reactions: [
                             {
                                 id: '725037351486881824',
@@ -54,6 +55,7 @@ const reactGuilds: Array<reactGuild> = [
                 messages: [
                     {
                         id: '804196628067647498',
+                        name: 'access roles',
                         reactions: [
                             {
                                 id: '745677254696370266',
@@ -71,6 +73,7 @@ const reactGuilds: Array<reactGuild> = [
                     },
                     {
                         id: '804196628515782677',
+                        name: 'color roles',
                         reactions: [
                             {
                                 id: '803862924950110210',
@@ -167,4 +170,8 @@ const flatten = (initialArray: Array<any>): Array<any> => {
 // get all emote objects used for reactions
 const reactEmotes: Array<reactEmote> = flatten(reactGuilds.map(guild => guild.channels.map(channel => channel.messages?.map(message => message.reactions.map(emote => emote)))));
 
-export { reactGuilds, reactEmotes };
+// get all unique messages used for reactions
+const reactMessages: Array<reactMessage> = flatten(reactGuilds.map(guild => guild.channels.map(channel => channel.messages)));
+
+
+export { reactChannel, reactGuilds, reactMessages, reactEmotes };

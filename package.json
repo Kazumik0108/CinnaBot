@@ -27,7 +27,7 @@
   "scripts": {
     "start": "ts-node-dev --respawn src/index.ts",
     "dev": "nodemon --exec ts-node src/index.ts",
-    "build": "tsc"
+    "tsc": "tsc"
   },
   "devDependencies": {
     "@types/node": "^14.14.24",

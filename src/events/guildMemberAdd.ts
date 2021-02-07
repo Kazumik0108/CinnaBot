@@ -3,7 +3,7 @@ import { GuildMember, MessageEmbed, TextChannel } from 'discord.js';
 import { CommandoClient } from 'discord.js-commando';
 
 
-module.exports = async (client: CommandoClient, member: GuildMember) => {
+export default async (client: CommandoClient, member: GuildMember) => {
     // Note: welcome messages are enabled for Rin's Solo Camp server only, whose guild id is shown below
     if (member.guild.id === '725009170839109682') {
         // log the join event to #welcome-logs

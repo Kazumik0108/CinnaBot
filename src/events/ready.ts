@@ -1,14 +1,15 @@
 // ready.ts
 import { join } from 'path';
-import { reactEmotes } from '../info/server/reactionroles';
+import { reactMessages } from '../info/server/reactionroles';
 import { twitterUsers } from '../info/server/twitter';
-import { statuses } from '../info/botInfo';
+import { statuses } from '../info/botinfo';
 import { ClientUser, TextChannel } from 'discord.js';
 import { CommandoClient } from 'discord.js-commando';
 import { config } from 'dotenv';
-const Twit = require('twit');
+import Twit = require('twit');
 
-config({ path: join(__dirname, '../', '/process.env') });
+
+config({ path: join(__dirname, '../../process.env') });
 
 
 function startUpMessages(client: CommandoClient): void {
@@ -19,20 +20,19 @@ function startUpMessages(client: CommandoClient): void {
     });
 }
 
-
 const TwitterBot = new Twit({
-    consumer_key: process.env.API_KEY,
-    consumer_secret: process.env.API_KEY_SECRET,
+    consumer_key: process.env.API_KEY as string,
+    consumer_secret: process.env.API_KEY_SECRET as string,
     access_token: process.env.ACCESS_TOKEN,
     access_token_secret: process.env.ACCESS_TOKEN_SECRET,
 });
 
 
-module.exports = async (client: CommandoClient) => {
+export default (client: CommandoClient) => {
     // startup & status messages
     startUpMessages(client);
-    setStatus()
-        .then(() => setInterval(setStatus, 10 * 60 * 1000));
+    setInterval(setStatus, 10 * 60 * 1000);
+
 
     // register commands into client
     client.registry
@@ -44,15 +44,17 @@ module.exports = async (client: CommandoClient) => {
         ])
         .registerDefaultGroups()
         .registerDefaultCommands()
-        .registerCommandsIn(join(__dirname, '../commands'));
+        .registerCommandsIn(join(__dirname, '../commands/'));
 
-    // reaction roles: put messages into cache from each guild
-    reactEmotes.forEach(emote => {
-        const guildChannel = client.channels.cache.get(emote.message?.channel?.id!) as TextChannel;
-        guildChannel.messages.fetch(emote.message?.id!, true, false)
-            .then(msg => console.log(`Added message id ${msg.id} to cache from server ${msg.guild?.name} in channel ${(msg.channel as TextChannel).name}.`))
+
+    // reaction roles: put unique messages into cache from each guild
+    reactMessages.forEach(message => {
+        const guildChannel = client.channels.cache.get(message.channel?.id!) as TextChannel;
+        guildChannel.messages.fetch(message.id, true, false)
+            .then(msg => console.log(`Successfully added message ${msg.id} (${message.name}) to cache from server ${msg.guild?.name} in channel ${(msg.channel as TextChannel).name}.`))
             .catch(console.error);
     });
+
 
     // twitter users: create streams to post content their specified Discord channels
     twitterUsers.forEach(twitterUser => {
@@ -70,10 +72,11 @@ module.exports = async (client: CommandoClient) => {
                 }
             });
         });
-        console.log(`Stream event has successfully been created for Twitter ID ${twitterUser.handle}`);
+        console.log(`Successfully created stream event for Twitter ID ${twitterUser.handle}`);
     });
 
-    async function setStatus(): Promise<void> {
+
+    function setStatus(): void {
         // randomly choose a status type and then message
         const status = statuses[Math.floor(Math.random() * statuses.length)];
         (client.user as ClientUser).setActivity(status.content, { type: status.id })

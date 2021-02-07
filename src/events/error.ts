@@ -1,4 +1,4 @@
 // error.ts
-module.exports = () => {
+export default () => {
     console.log('An error occurred trying to start up.');
 };

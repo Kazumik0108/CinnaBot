@@ -4,7 +4,7 @@ import { CommandoClient } from 'discord.js-commando';
 import { reactEmotes } from '../info/server/reactionroles';
 
 
-module.exports = async (client: CommandoClient, reaction: MessageReaction) => {
+export default async (client: CommandoClient, reaction: MessageReaction) => {
     // ignore reactions from itself
     if (reaction.me) return;
 
