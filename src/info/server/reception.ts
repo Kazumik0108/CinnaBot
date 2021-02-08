@@ -10,7 +10,7 @@ interface embedGuild {
 
 // To properly cache the messages (in ready.ts), the message ids here should be manually-updated with the target id of the output message from the command embed.ts
 const welcome: reactMessage = {
-    id: '804187124819296307',
+    id: '808440097845673994',
     name: 'welcome',
     embed: new MessageEmbed()
         .setTitle('Welcome to Rin\'s Solo Camp!')
@@ -20,7 +20,7 @@ const welcome: reactMessage = {
 };
 
 const rules: reactMessage = {
-    id: '804187136793378847',
+    id: '808440111536406598',
     name: 'rules',
     embed: new MessageEmbed()
         .setTitle('Server Rules')
@@ -57,7 +57,7 @@ const rules: reactMessage = {
 };
 
 const accessRoles: reactMessage = {
-    id: '804196628067647498',
+    id: '808440238154186782',
     name: 'accessRoles',
     embed: new MessageEmbed()
         .setTitle('Access Roles')
@@ -87,7 +87,7 @@ const accessRoles: reactMessage = {
 };
 
 const colorRoles: reactMessage = {
-    id: '804196628515782677',
+    id: '808440249054920715',
     name: 'colorRoles',
     embed: new MessageEmbed()
         .setTitle('Color Roles')
