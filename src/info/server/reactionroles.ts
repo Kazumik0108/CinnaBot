@@ -19,8 +19,8 @@ const reactGuilds: reactGuild[] = [
                 id: '804157684591886356',
                 name: 'role-picker',
                 messages: [
-                    embedGuilds[0].embed.get('accessRoles')!,
-                    embedGuilds[0].embed.get('colorRoles')!,
+                    embedGuilds[0].embed.get('access roles')!,
+                    embedGuilds[0].embed.get('color roles')!,
                 ],
             },
         ],

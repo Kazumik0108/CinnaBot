@@ -1,6 +1,6 @@
 // gem.ts
 import { Command, CommandoClient, CommandoMessage } from 'discord.js-commando';
-import { gems } from '../../info/gems';
+import { gems } from '../../info/wiki/gems';
 
 interface promptArgs {
     names: string,

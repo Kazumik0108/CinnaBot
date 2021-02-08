@@ -185,10 +185,10 @@ export const embedGuilds: embedGuild[] = [
         id: '725009170839109682',
         name: 'Rin\'s Solo Camp',
         embed: new Collection([
-            [Object.keys({ welcome })[0], welcome],
-            [Object.keys({ rules })[0], rules],
-            [Object.keys({ accessRoles })[0], accessRoles],
-            [Object.keys({ colorRoles })[0], colorRoles],
+            ['welcome', welcome],
+            ['rules', rules],
+            ['access roles', accessRoles],
+            ['color roles', colorRoles],
         ]),
     },
 ];
