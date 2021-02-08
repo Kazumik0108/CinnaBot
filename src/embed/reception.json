@@ -7,7 +7,7 @@
             "thumbnail": "https://cdn.discordapp.com/emojis/725155394934145105.png?v=1"
         }
     ],
-    "rules": [    
+    "rules": [
         {
             "title": "Server Rules",
             "color": "059ecd",
@@ -28,7 +28,7 @@
                 },
                 {
                     "name": "4. Spoilers",
-                    "value":"Keep spoilers for anime, manga, novels, etc. out of <#725009172357316698> and the voice channels. Not everybody reads or watches at the same pace. Ideally, spoiler-tag the content and mention the series so others are aware of what is being spoilered. This goes especially for seasonals.\n\nYuru Camp spoilers specifically belong in <#796779279466758185>."
+                    "value": "Keep spoilers for anime, manga, novels, etc. out of <#725009172357316698> and the voice channels. Not everybody reads or watches at the same pace. Ideally, spoiler-tag the content and mention the series so others are aware of what is being spoilered. This goes especially for seasonals.\n\nYuru Camp spoilers specifically belong in <#796779279466758185>."
                 }
             ],
             "reactions": [

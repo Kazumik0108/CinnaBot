@@ -1,7 +1,7 @@
 // message.ts
 import { Guild, GuildEmoji, GuildMember, TextChannel, Webhook } from 'discord.js';
 import { CommandoClient, CommandoMessage } from 'discord.js-commando';
-import { reactions } from '../info/server/reactions';
+import { reactions } from '../info/server/reactionbot';
 
 
 export default async (client: CommandoClient, message: CommandoMessage) => {

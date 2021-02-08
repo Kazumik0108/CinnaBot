@@ -1,10 +1,7 @@
-// reactions.ts
-interface reactionGroup {
-    name: string;
-    emotes: Array<string>;
-}
+// reactionbot.ts
+import { reactGroup } from '../../interfaces/reactInterface';
 
-export const reactions: Array<reactionGroup> = [
+export const reactions: reactGroup[] = [
     {
         name: 'rinhi',
         emotes: [

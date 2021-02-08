@@ -1,14 +1,14 @@
 // twitter.ts
-import { reactChannel } from './reactionroles';
+import { reactChannel } from '../../interfaces/reactInterface';
 
 
 interface twitterUser {
     id: string;
     handle?: string;
-    channels: Array<reactChannel>;
+    channels: reactChannel[];
 }
 
-export const twitterUsers: Array<twitterUser> = [
+export const twitterUsers: twitterUser[] = [
     {
         id: '1354893702397890563',
         handle: '@KenoHyo',
