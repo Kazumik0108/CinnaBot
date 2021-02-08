@@ -12,15 +12,15 @@ const reactGuilds: reactGuild[] = [
                 id: '779044446104059914',
                 name: 'rules-and-info',
                 messages: [
-                    embedGuilds.get('725009170839109682')!.embed.get('rules')!,
+                    embedGuilds.find(guild => guild.id === '725009170839109682')?.embed.find(msg => msg.name === 'rules') as reactMessage,
                 ],
             },
             {
                 id: '804157684591886356',
                 name: 'role-picker',
                 messages: [
-                    embedGuilds.get('725009170839109682')!.embed.get('access roles')!,
-                    embedGuilds.get('725009170839109682')!.embed.get('color roles')!,
+                    embedGuilds.find(guild => guild.id === '725009170839109682')?.embed.find(msg => msg.name === 'access roles') as reactMessage,
+                    embedGuilds.find(guild => guild.id === '725009170839109682')?.embed.find(msg => msg.name === 'color roles') as reactMessage,
                 ],
             },
         ],

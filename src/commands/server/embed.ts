@@ -25,7 +25,7 @@ export default class embedPreFormatted extends Command {
                     key: 'name',
                     prompt: 'Enter the embedded message name to display. Send one argument at a time. The available options are:\n' +
                         '```\n' +
-                        `${Array.from(embedGuilds.get('725009170839109682')!.embed.keys()).join('\n')}` +
+                        `${embedGuilds[0].embed.map(msg => msg.name).join('\n')}` +
                         '```',
                     type: 'string',
                 },
@@ -35,13 +35,23 @@ export default class embedPreFormatted extends Command {
 
     async run(message: CommandoMessage, { name }: promptArgs): Promise<null> {
         // Abort command if there are no embed messages made for the message server
-        if (embedGuilds.has((message.guild as Guild).id)) {
-            Promise.resolve(embedGuilds.get((message.guild as Guild).id))
+        if (embedGuilds.some(embedGuild => embedGuild.id === (message.guild as Guild).id)) {
+            Promise.resolve(embedGuilds.find(embedGuild => embedGuild.id === (message.guild as Guild).id))
+                // Attempt to send an embed message if the input name is valid
                 .then(embedGuild => {
-                    // Attempt to send an embed message if the input name is valid
-                    if (embedGuild?.embed.has(name)) {
-                        const reactMessage = embedGuilds.get('725009170839109682')!.embed.get(name);
-                        message.say(reactMessage?.embed)
+                    if (embedGuild?.embed.some(reactMessage => reactMessage.name === name)) {
+                        return embedGuild?.embed.find(reactMessage => reactMessage.name === name);
+                    }
+                    else {
+                        message.say(`${name} is not a valid embed message name.`)
+                            .then(invalidMsg => invalidMsg.delete({ timeout: 5000 }));
+                        return;
+                    }
+                })
+                // If an embed message was sent, add reactions if they are available
+                .then(reactMessage => {
+                    if (reactMessage) {
+                        message.say(reactMessage.embed)
                             .then(msg => {
                                 if (reactMessage?.reactions) {
                                     reactMessage?.reactions.forEach(reaction => {
@@ -51,11 +61,8 @@ export default class embedPreFormatted extends Command {
                             });
                     }
                     else {
-                        message.say(`${name} is not a valid embed message name.`)
-                            .then(invalidMsg => invalidMsg.delete({ timeout: 5000 }));
+                        return;
                     }
-
-                    message.delete({ timeout: 5000 });
                 });
         }
         else {

@@ -3,7 +3,7 @@ import { GuildMember } from 'discord.js';
 import { Command, CommandoClient, CommandoMessage } from 'discord.js-commando';
 
 
-module.exports = class emitadd extends Command {
+export default class emitadd extends Command {
     constructor(client: CommandoClient) {
         super(client, {
             name: 'emitadd',

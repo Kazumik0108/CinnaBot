@@ -1,11 +1,11 @@
 // reception.ts
-import { Collection, MessageEmbed } from 'discord.js';
+import { MessageEmbed } from 'discord.js';
 import { reactMessage } from '../../interfaces/reactInterface';
 
 interface embedGuild {
     id: string,
     name?: string,
-    embed: Collection<string, reactMessage>
+    embed: reactMessage[]
 }
 
 // To properly cache the messages (in ready.ts), the message ids here should be manually-updated with the target id of the output message from the command embed.ts
@@ -58,7 +58,7 @@ const rules: reactMessage = {
 
 const accessRoles: reactMessage = {
     id: '808440238154186782',
-    name: 'accessRoles',
+    name: 'access roles',
     embed: new MessageEmbed()
         .setTitle('Access Roles')
         .setColor('#fc9003')
@@ -88,7 +88,7 @@ const accessRoles: reactMessage = {
 
 const colorRoles: reactMessage = {
     id: '808440249054920715',
-    name: 'colorRoles',
+    name: 'color roles',
     embed: new MessageEmbed()
         .setTitle('Color Roles')
         .setColor('#991a09')
@@ -180,18 +180,15 @@ const colorRoles: reactMessage = {
 };
 
 
-export const embedGuilds: Collection<string, embedGuild> = new Collection([
-    [
-        '725009170839109682',
-        {
-            id: '725009170839109682',
-            name: 'Rin\'s Solo Camp',
-            embed: new Collection([
-                ['welcome', welcome],
-                ['rules', rules],
-                ['access roles', accessRoles],
-                ['color roles', colorRoles],
-            ]),
-        },
-    ],
-]);
+export const embedGuilds: embedGuild[] = [
+    {
+        id: '725009170839109682',
+        name: 'Rin\'s Solo Camp',
+        embed: [
+            welcome,
+            rules,
+            accessRoles,
+            colorRoles,
+        ],
+    },
+];
