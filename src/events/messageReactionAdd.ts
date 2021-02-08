@@ -15,6 +15,7 @@ export default async (client: CommandoClient, reaction: MessageReaction): Promis
     if (reactMessages.some(reactMessage => reactMessage.id === message.id)) {
         const roleID = getRoleID();
         if (roleID !== '') {
+            // give or remove the role from the user
             const role = (reaction.message.guild as Guild).roles.cache.get(roleID) as Role;
             const user = (reaction.message.guild as Guild).members.cache.get((reaction.users.cache.first() as User).id) as GuildMember;
             const hasRole = user.roles.cache.get(role.id);
@@ -58,11 +59,12 @@ export default async (client: CommandoClient, reaction: MessageReaction): Promis
         // check if the message ID matches any valid message ID for reaction roles
         // if the emote name is matched, return the role id
         // else return an empty string
-        reactEmotes.forEach(emote => {
-            if (reaction.emoji.id === emote.id) {
-                return emote.roleID;
-            }
-        });
-        return '';
+        const emote = reactEmotes.filter(reactEmote => (reaction.emoji.id === reactEmote.id) ? true : false)[0];
+        if (emote) {
+            return emote.roleID!;
+        }
+        else {
+            return '';
+        }
     }
 };

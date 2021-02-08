@@ -1,6 +1,6 @@
 // reactionroles.ts
 import { reactGuild, reactMessage, reactEmote } from '../../interfaces/reactInterface';
-import { embedGuilds } from '../../embed/reception';
+import { embedGuilds } from '../../info/server/reception';
 
 
 const reactGuilds: reactGuild[] = [
@@ -12,15 +12,15 @@ const reactGuilds: reactGuild[] = [
                 id: '779044446104059914',
                 name: 'rules-and-info',
                 messages: [
-                    embedGuilds[0].embed.get('rules')!,
+                    embedGuilds.get('725009170839109682')!.embed.get('rules')!,
                 ],
             },
             {
                 id: '804157684591886356',
                 name: 'role-picker',
                 messages: [
-                    embedGuilds[0].embed.get('access roles')!,
-                    embedGuilds[0].embed.get('color roles')!,
+                    embedGuilds.get('725009170839109682')!.embed.get('access roles')!,
+                    embedGuilds.get('725009170839109682')!.embed.get('color roles')!,
                 ],
             },
         ],

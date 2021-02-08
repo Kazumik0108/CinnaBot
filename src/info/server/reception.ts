@@ -1,6 +1,6 @@
 // reception.ts
 import { Collection, MessageEmbed } from 'discord.js';
-import { reactMessage } from '../interfaces/reactInterface';
+import { reactMessage } from '../../interfaces/reactInterface';
 
 interface embedGuild {
     id: string,
@@ -180,15 +180,18 @@ const colorRoles: reactMessage = {
 };
 
 
-export const embedGuilds: embedGuild[] = [
-    {
-        id: '725009170839109682',
-        name: 'Rin\'s Solo Camp',
-        embed: new Collection([
-            ['welcome', welcome],
-            ['rules', rules],
-            ['access roles', accessRoles],
-            ['color roles', colorRoles],
-        ]),
-    },
-];
+export const embedGuilds: Collection<string, embedGuild> = new Collection([
+    [
+        '725009170839109682',
+        {
+            id: '725009170839109682',
+            name: 'Rin\'s Solo Camp',
+            embed: new Collection([
+                ['welcome', welcome],
+                ['rules', rules],
+                ['access roles', accessRoles],
+                ['color roles', colorRoles],
+            ]),
+        },
+    ],
+]);

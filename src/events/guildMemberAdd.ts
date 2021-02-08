@@ -1,32 +1,28 @@
 // guildMemberAdd.ts
 import { GuildMember, MessageEmbed, TextChannel } from 'discord.js';
 import { CommandoClient } from 'discord.js-commando';
+import { welcomeGuilds } from '../info/server/welcome';
 
+export default async (client: CommandoClient, member: GuildMember): Promise<void> => {
+    if (welcomeGuilds.has(member.guild.id)) {
+        // log the join event to the log channel, if specified
+        Promise.resolve(welcomeGuilds.get(member.guild.id))
+            .then(guild => {
+                if (guild?.logChannelID) {
+                    Promise.resolve(client.channels.cache.get(guild.logChannelID) as TextChannel)
+                        .then(logChannel => logChannel.send(`${member.user.username} has joined ${member.guild.name}!`));
+                }
 
-export default async (client: CommandoClient, member: GuildMember) => {
-    // Note: welcome messages are enabled for Rin's Solo Camp server only, whose guild id is shown below
-    if (member.guild.id === '725009170839109682') {
-        // log the join event to #welcome-logs
-        const welcomeLog = client.channels.cache.get('725030145840382053') as TextChannel;
-        if (typeof welcomeLog !== 'undefined') welcomeLog.send(`${member.user.username} has joined! <:RinHi:725291274013376553>`);
+                // Do not send embed messages for bots
+                if (member.user.bot) return;
 
-        // do not send embed message if the user is a bot!
-        if (member.user.bot) return;
+                const embedMessage = (guild?.welcome as MessageEmbed)
+                    .setTitle(member.guild.name)
+                    .setThumbnail(member.user.avatarURL()!);
 
-        // create embed
-        const embedMessage = new MessageEmbed()
-            .setColor('#059ecd')
-            .setTitle(member.guild.name)
-            .setThumbnail(member.user.avatarURL()!)
-            .setDescription(
-                `Welcome, <@!${member.user.id}>!\n` +
-                'Rin is love, Rin is life.\n\n' +
-                'Check out the rules in <#779044446104059914> to gain access to the server.'
-            )
-            .setImage('https://raw.githubusercontent.com/Kazumik0108/CinnaBot/main/images/welcome/RinWave1.gif');
+                Promise.resolve(client.channels.cache.get(guild!.welcomeChannelID) as TextChannel)
+                    .then(welcomeChannel => welcomeChannel.send(`Welcome <@${member.user.id}>!`, embedMessage));
 
-        // send the embed message to #simp-central
-        const welcomeChannel = client.channels.cache.get('725009172357316698') as TextChannel;
-        welcomeChannel.send(embedMessage);
+            });
     }
 };
