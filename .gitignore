@@ -1,7 +1,10 @@
+# Transpiled JavaScript files
+.build/
+
 # Local eslinter config
 *.eslintrc*
 
-# Dependecy directories
+# Dependency directories
 node_modules/
 
 # dotenv environment variables file
