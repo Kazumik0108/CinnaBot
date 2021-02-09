@@ -1,9 +1,6 @@
 # Transpiled JavaScript files
 .build/
 
-# Local eslinter config
-*.eslintrc*
-
 # Dependency directories
 node_modules/
 
