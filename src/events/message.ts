@@ -1,10 +1,10 @@
 // message.ts
-import { Guild, GuildEmoji, GuildMember, TextChannel, Webhook } from 'discord.js';
+import { Guild, GuildEmoji, GuildMember, Role, TextChannel } from 'discord.js';
 import { CommandoClient, CommandoMessage } from 'discord.js-commando';
 import { reactions } from '../info/server/reactionbot';
 
 
-export default async (client: CommandoClient, message: CommandoMessage) => {
+export default async (client: CommandoClient, message: CommandoMessage): Promise<void> => {
     // Prevent the following commands if the message author is a bot or the message is in a DM
     if (message.author.bot || message.channel.type === 'dm') return;
 
@@ -60,58 +60,55 @@ export default async (client: CommandoClient, message: CommandoMessage) => {
         return emoteMatch;
     }
 
-    async function sendMessageWebhook(content: string): Promise<void> {
+    function sendMessageWebhook(content: string): void {
         // Deletes the OP's message and sends a webhook mimicking the OP
-
         // Function requires the bot to have MANAGE_MESSAGES and MANAGE_WEBHOOKS permissions
         // Function also requires @everyone to have USE_EXTERNAL_EMOJIS permissions
-
-        // @ts-ignore because this is never a DM channel and the bot will in the client if a message is read
-        const botPerms = message.guild.member(client.user).permissions.toArray();
-        let botFlags = ['MANAGE_MESSAGES', 'MANAGE_WEBHOOKS'];
-        botFlags = botFlags.filter(flag => !botPerms.some(perm => perm === flag));
-        if (botFlags.length > 0) {
-            message.reply(`I am missing \`${botFlags}\` permissions in this server to replace emotes in a message.`);
+        const bot = message.guild?.member(client.user!) as GuildMember;
+        if (!bot.permissions.has(['MANAGE_MESSAGES', 'MANAGE_WEBHOOKS'])) {
+            message.reply('I require `MANAGE_MESSAGES, MANAGE_WEBHOOKS` permissions in this server to replace emotes in a message.')
+                .then(botReply => botReply.delete({ timeout: 10 * 1000 }));
             return;
         }
 
-        // @ts-ignore because this is never a DM channel and the role @everyone always exists as that name
-        const everyonePerms = message.guild.roles.cache.find(role => role.name === '@everyone').permissions.toArray();
-        let everyoneFlags = ['USE_EXTERNAL_EMOJIS'];
-        everyoneFlags = everyoneFlags.filter(flag => !everyonePerms.some(perm => perm === flag));
-        if (everyoneFlags.length > 0) {
-            message.reply(`the role \`@everyone\` is missing \`${everyoneFlags}\` permissions in this server to replace emotes in a message.`);
+        const everyone = message.guild?.roles.cache.find(role => role.name === '@everyone') as Role;
+        if (!everyone.permissions.has('USE_EXTERNAL_EMOJIS')) {
+            message.reply('The role `@everyone` requires `USE_EXTERNAL_EMOJIS` permissions in this server to replace emotes in a message.')
+                .then(everyoneReply => everyoneReply.delete({ timeout: 10 * 1000 }));
             return;
         }
+
 
         // bot & @everyone has required permissions if the code reaches this block
         message.delete().catch(error => {
             console.error('Failed to delete the message:', error);
         });
 
-        const webhook = await (message.channel as TextChannel).fetchWebhooks().then(webhooks => webhooks.first()) as Webhook;
+        Promise.resolve((message.channel as TextChannel).fetchWebhooks())
+            .then(webhooks => webhooks.first())
+            .then(webhook => {
+                // get user info from the message
+                const member = (message.guild as Guild).member(message.author) as GuildMember;
+                const nickname = member ? member.displayName : message.author.username;
+                const avatar = message.author.displayAvatarURL();
 
-        // get user info from the message
-        const member = (message.guild as Guild).member(message.author) as GuildMember;
-        const nickname = member ? member.displayName : message.author.username;
-        const avatar = message.author.displayAvatarURL();
-
-        if (typeof webhook === 'undefined') {
-            // no webhook exists in this channel, so create one
-            ((message.channel as TextChannel).createWebhook('CinnaBot') as Promise<Webhook>)
-                .then(newWebhook => {
-                    newWebhook.send(content, {
+                if (webhook) {
+                    // send the content through the existing channel webhook
+                    webhook.send(content, {
                         username: nickname,
                         avatarURL: avatar,
                     });
-                });
-        }
-        else {
-            // send the content through the existing channel webhook
-            webhook.send(content, {
-                username: nickname,
-                avatarURL: avatar,
+                }
+                else {
+                    // no webhook exists in this channel, so create one
+                    (message.channel as TextChannel).createWebhook('CinnaBot')
+                        .then(newWebhook => {
+                            newWebhook.send(content, {
+                                username: nickname,
+                                avatarURL: avatar,
+                            });
+                        });
+                }
             });
-        }
     }
 };
