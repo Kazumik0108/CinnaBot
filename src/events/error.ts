@@ -1,4 +1,4 @@
 // error.ts
-export default async (error: Error): Promise<void> => {
-    console.log('An error occurred trying to start up: ', error);
+export const main = (error: Error) => {
+  console.log('An error occurred trying to start up: ', error);
 };

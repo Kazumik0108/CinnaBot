@@ -1,8 +1,8 @@
 {
   "name": "cinnabot",
-  "version": "3.1.2",
+  "version": "3.2.0",
   "description": "Cinnabar has entered the Gem-to-Lunarian transformation machine.",
-  "main": "index.js",
+  "main": "index.ts",
   "author": "Kazumik",
   "repository": {
     "type": "git",

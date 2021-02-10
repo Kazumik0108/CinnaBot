@@ -4,7 +4,7 @@ import { CommandoClient, CommandoMessage } from 'discord.js-commando';
 import { emoteChannels } from '../info/server/emotechannel';
 import { getGuildEmotes, sendGuildEmotes } from '../commands/emote/emotelist';
 
-export default (client: CommandoClient, emoji: GuildEmoji) => {
+export const main = (client: CommandoClient, emoji: GuildEmoji) => {
   const subscribers = emoteChannels.filter((channel) => channel.servers.some((server) => server.id === emoji.guild.id));
   if (subscribers) {
     subscribers.forEach(async (subscriber) => {

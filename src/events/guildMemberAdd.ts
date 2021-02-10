@@ -3,26 +3,21 @@ import { GuildMember, MessageEmbed, TextChannel } from 'discord.js';
 import { CommandoClient } from 'discord.js-commando';
 import { welcomeGuilds } from '../info/server/welcome';
 
-export default async (client: CommandoClient, member: GuildMember): Promise<void> => {
-    if (welcomeGuilds.has(member.guild.id)) {
-        // log the join event to the log channel, if specified
-        Promise.resolve(welcomeGuilds.get(member.guild.id))
-            .then(guild => {
-                if (guild?.logChannelID) {
-                    Promise.resolve(client.channels.cache.get(guild.logChannelID) as TextChannel)
-                        .then(logChannel => logChannel.send(`${member.user.username} has joined ${member.guild.name}!`));
-                }
+export const main = (client: CommandoClient, member: GuildMember) => {
+  if (!welcomeGuilds.has(member.guild.id)) return;
 
-                // Do not send embed messages for bots
-                if (member.user.bot) return;
+  const welcomeGuild = welcomeGuilds.get(member.guild.id);
+  if (welcomeGuild == undefined) return;
 
-                const embedMessage = (guild?.welcome as MessageEmbed)
-                    .setTitle(member.guild.name)
-                    .setThumbnail(member.user.avatarURL()!);
+  if (welcomeGuild.logChannelID == undefined) return;
+  const logChannel = client.channels.cache.get(welcomeGuild.logChannelID) as TextChannel;
+  logChannel.send(`${member.user.username} has joined ${member.guild.name}!`);
 
-                Promise.resolve(client.channels.cache.get(guild!.welcomeChannelID) as TextChannel)
-                    .then(welcomeChannel => welcomeChannel.send(`Welcome <@${member.user.id}>!`, embedMessage));
+  if (member.user.bot || welcomeGuild.welcomeChannelID == undefined) return;
+  const embedMessage = (welcomeGuild?.welcome as MessageEmbed)
+    .setTitle(member.guild.name)
+    .setThumbnail(member.user.avatarURL() as string);
 
-            });
-    }
+  const welcomeChannel = client.channels.cache.get(welcomeGuild.welcomeChannelID) as TextChannel;
+  welcomeChannel.send(`Welcome <@${member.user.id}>!`, embedMessage);
 };

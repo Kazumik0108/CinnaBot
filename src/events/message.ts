@@ -1,114 +1,95 @@
 // message.ts
-import { Guild, GuildEmoji, GuildMember, Role, TextChannel } from 'discord.js';
+import { ClientUser, GuildEmoji, TextChannel } from 'discord.js';
 import { CommandoClient, CommandoMessage } from 'discord.js-commando';
 import { reactions } from '../info/server/reactionbot';
 
+const checkMessageEmotes = (message: CommandoMessage): boolean => {
+  const hasColons = message.content.split(/:/).length > 2;
+  const notCode = message.content.split(/`/).length <= 1 && message.content.split(/\\/).length <= 1;
+  return hasColons && notCode;
+};
 
-export default async (client: CommandoClient, message: CommandoMessage): Promise<void> => {
-    // Prevent the following commands if the message author is a bot or the message is in a DM
-    if (message.author.bot || message.channel.type === 'dm') return;
+const checkMessageReacts = (message: CommandoMessage): boolean => {
+  const reactRegex = /<a?:\w+:\d+>/g;
+  const hasEmoteOnly = message.content.split(reactRegex).every((text) => !text.match(/\w/));
+  return hasEmoteOnly;
+};
 
-    // Define message checkers
-    const checkEmote = (msg: CommandoMessage): boolean => {
-        // Return true if there is at least one pair of colons, denoting a possible emote, and no backticks or escape characters in the message contents
-        return msg.content.split(/:/).length > 2 && msg.content.split(/`/).length <= 1 && msg.content.split(/\\/).length <= 1;
-    };
-    const checkReact = (msg: CommandoMessage): boolean => {
-        // Return true if the message contains actual emotes with no text. White spaces and new lines are allowed in the message contents
-        const reactRegex = /<a?:\w+:\d+>/g;
-        return msg.content.split(reactRegex).every(text => !text.match(/\w/));
-    };
+const emoteReplace = (message: CommandoMessage) => {
+  const regexEmote = /<a?:\w+:\d+>|(?<!\\):(\w+):/g;
+  const newMessage = message.content.replace(regexEmote, replaceMessageEmotes);
+  if (message.content != newMessage) sendMessageWebhook(message, newMessage);
 
-    // Emote replace block
-    // Attempt to replace emotes in a message by a user by checking the contents of a substring enclosed by a pair of colons, e.g. :emote:
-    if (checkEmote(message)) {
-        const regexEmote = /<a?:\w+:\d+>|(?<!\\):(\w+):/g;
-        const newMessage = message.content.replace(regexEmote, replaceMessageEmotes);
-        // only send webhook if the new message content is different
-        if (message.content !== newMessage) sendMessageWebhook(newMessage);
-    }
+  function replaceMessageEmotes(substring: string, regexMatch: string): string {
+    const emoteMatch = getEmoteMatch(message, regexMatch);
+    if (emoteMatch == undefined) return substring;
+    const emoteReplacement = emoteMatch.animated
+      ? `<a:${emoteMatch.name}:${emoteMatch.id}>`
+      : `<:${emoteMatch.name}:${emoteMatch.id}>`;
+    return emoteReplacement;
+  }
+};
 
-    // Bot reaction block
-    // React only to messages containing valid emotes and no extra text
-    if (checkReact(message)) {
-        reactions.forEach(reactionGroup => {
-            const checkMatch = reactionGroup.emotes.some(reaction => message.content.includes(reaction));
-            if (checkMatch) reactionGroup.emotes.forEach(reaction => message.react(reaction));
-        });
-    }
+const getEmoteMatch = (message: CommandoMessage, match: string): GuildEmoji | undefined => {
+  let emoteMatch = message.guild.emojis.cache.find((emote) => emote.name.toLowerCase() == match.toLowerCase());
+  if (emoteMatch != undefined) return emoteMatch;
+  emoteMatch = message.client.guilds.cache
+    .flatMap((guild) => guild.emojis.cache)
+    .find((emote) => emote.name.toLowerCase() === match.toLowerCase());
+  return emoteMatch;
+};
 
+const sendMessageWebhook = async (message: CommandoMessage, content: string) => {
+  const bot = message.guild.member(message.client.user as ClientUser);
+  if (bot == null) return;
+  if (!bot.permissions.has(['MANAGE_MESSAGES', 'MANAGE_WEBHOOKS'])) {
+    const errorBot =
+      'I require `MANAGE_MESSAGES, MANAGE_WEBHOOKS` permissions in this server to replace emotes in a message.';
+    (await message.reply(errorBot)).delete({ timeout: 10 * 1000 });
+    return;
+  }
 
-    function replaceMessageEmotes(substring: string, match: string): string {
-        // Returns a string after attempting to replace the emote substrings of the original message
-        if (match) {
-            const emoteMatch = getMatchEmojis(match);
-            if (emoteMatch) {
-                return (emoteMatch.animated) ? `<a:${emoteMatch.name}:${emoteMatch.id}>` : `<:${emoteMatch.name}:${emoteMatch.id}>`;
-            }
-        }
-        // if no emote matches were found, return the original substring
-        return substring;
-    }
+  const everyone = message.guild.roles.cache.find((role) => role.name == '@everyone');
+  if (everyone == null) return;
+  if (!everyone.permissions.has('USE_EXTERNAL_EMOJIS')) {
+    const errorEveryone =
+      'The role `@everyone` requires `USE_EXTERNAL_EMOJIS` permissions in this server to replace emotes in a message.';
+    (await message.reply(errorEveryone)).delete({ timeout: 10 * 1000 });
+    return;
+  }
 
-    function getMatchEmojis(match: string): GuildEmoji | undefined {
-        // If the matched emote exists in the server, use that emote
-        // Otherwise, try to find it in another server
-        let emoteMatch = (message.guild as Guild).emojis.cache.find(emote => emote.name.toLowerCase() === match.toLowerCase());
-        if (!emoteMatch) {
-            emoteMatch = client.guilds.cache.flatMap(guild => guild.emojis.cache).find(emote => emote.name.toLowerCase() === match.toLowerCase());
-        }
-        return emoteMatch;
-    }
+  message.delete().catch((error) => console.log('Failed to delete the message: ', error));
 
-    function sendMessageWebhook(content: string): void {
-        // Deletes the OP's message and sends a webhook mimicking the OP
-        // Function requires the bot to have MANAGE_MESSAGES and MANAGE_WEBHOOKS permissions
-        // Function also requires @everyone to have USE_EXTERNAL_EMOJIS permissions
-        const bot = message.guild?.member(client.user!) as GuildMember;
-        if (!bot.permissions.has(['MANAGE_MESSAGES', 'MANAGE_WEBHOOKS'])) {
-            message.reply('I require `MANAGE_MESSAGES, MANAGE_WEBHOOKS` permissions in this server to replace emotes in a message.')
-                .then(botReply => botReply.delete({ timeout: 10 * 1000 }));
-            return;
-        }
+  const member = message.member;
+  const nickname = member ? member.displayName : message.author.username;
+  const avatar = message.author.displayAvatarURL();
 
-        const everyone = message.guild?.roles.cache.find(role => role.name === '@everyone') as Role;
-        if (!everyone.permissions.has('USE_EXTERNAL_EMOJIS')) {
-            message.reply('The role `@everyone` requires `USE_EXTERNAL_EMOJIS` permissions in this server to replace emotes in a message.')
-                .then(everyoneReply => everyoneReply.delete({ timeout: 10 * 1000 }));
-            return;
-        }
+  const webhook = (await (message.channel as TextChannel).fetchWebhooks()).first();
+  if (webhook != undefined) {
+    webhook.send(content, {
+      username: nickname,
+      avatarURL: avatar,
+    });
+  } else {
+    const newWebhook = await (message.channel as TextChannel).createWebhook(bot.user.username);
+    newWebhook.send(content, {
+      username: nickname,
+      avatarURL: avatar,
+    });
+  }
+};
 
+const botReaction = (message: CommandoMessage) => {
+  reactions.forEach((reactionGroup) => {
+    const checkMatch = reactionGroup.emotes.some((reaction) => message.content.includes(reaction));
+    if (checkMatch) reactionGroup.emotes.forEach((reaction) => message.react(reaction));
+  });
+};
 
-        // bot & @everyone has required permissions if the code reaches this block
-        message.delete().catch(error => {
-            console.error('Failed to delete the message:', error);
-        });
+export const main = (client: CommandoClient, message: CommandoMessage) => {
+  if (message.author.bot) return;
+  if (message.channel.type === 'dm') return;
 
-        Promise.resolve((message.channel as TextChannel).fetchWebhooks())
-            .then(webhooks => webhooks.first())
-            .then(webhook => {
-                // get user info from the message
-                const member = (message.guild as Guild).member(message.author) as GuildMember;
-                const nickname = member ? member.displayName : message.author.username;
-                const avatar = message.author.displayAvatarURL();
-
-                if (webhook) {
-                    // send the content through the existing channel webhook
-                    webhook.send(content, {
-                        username: nickname,
-                        avatarURL: avatar,
-                    });
-                }
-                else {
-                    // no webhook exists in this channel, so create one
-                    (message.channel as TextChannel).createWebhook('CinnaBot')
-                        .then(newWebhook => {
-                            newWebhook.send(content, {
-                                username: nickname,
-                                avatarURL: avatar,
-                            });
-                        });
-                }
-            });
-    }
+  if (checkMessageEmotes(message)) emoteReplace(message);
+  if (checkMessageReacts(message)) botReaction(message);
 };
