@@ -82,14 +82,14 @@ export default class serverEmoteList extends Command {
   }
 
   async run(message: CommandoMessage) {
-    // remove the command from the message contents
     const arg = message.content.slice(this.examples[0].length).trim();
+
     if (arg === '0') {
-      // else if the user input 0 as the arg, use the current guild
       const emoteMsg = await getGuildEmotes(message.guild as Guild);
       await sendGuildEmotes(message, emoteMsg);
       return message;
     }
+
     const userGuilds = message.client.guilds.cache
       .filter((guild) => guild.member(message.author.id) != null)
       .sort((guildA, guildB) => {
@@ -133,6 +133,8 @@ export default class serverEmoteList extends Command {
 
       collected.forEach((msg) => msg.delete({ timeout: 2000 }));
     });
+
+    message.delete({ timeout: 5000 });
 
     return null;
   }
