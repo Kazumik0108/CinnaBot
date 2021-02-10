@@ -21,12 +21,12 @@ const emoteReplace = (message: CommandoMessage) => {
   if (message.content != newMessage) sendMessageWebhook(message, newMessage);
 
   function replaceMessageEmotes(substring: string, regexMatch: string): string {
+    if (regexMatch == undefined) return substring;
+
     const emoteMatch = getEmoteMatch(message, regexMatch);
     if (emoteMatch == undefined) return substring;
-    const emoteReplacement = emoteMatch.animated
-      ? `<a:${emoteMatch.name}:${emoteMatch.id}>`
-      : `<:${emoteMatch.name}:${emoteMatch.id}>`;
-    return emoteReplacement;
+
+    return emoteMatch.animated ? `<a:${emoteMatch.name}:${emoteMatch.id}>` : `<:${emoteMatch.name}:${emoteMatch.id}>`;
   }
 };
 
