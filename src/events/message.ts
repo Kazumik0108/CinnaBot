@@ -2,6 +2,7 @@
 import { ClientUser, GuildEmoji, TextChannel } from 'discord.js';
 import { CommandoClient, CommandoMessage } from 'discord.js-commando';
 import { reactions } from '../info/server/reactionbot';
+import { getUserGuilds } from '../functions/filters';
 
 const checkMessageEmotes = (message: CommandoMessage): boolean => {
   const hasColons = message.content.split(/:/).length > 2;
@@ -33,6 +34,13 @@ const emoteReplace = (message: CommandoMessage) => {
 const getEmoteMatch = (message: CommandoMessage, match: string): GuildEmoji | undefined => {
   let emoteMatch = message.guild.emojis.cache.find((emote) => emote.name.toLowerCase() == match.toLowerCase());
   if (emoteMatch != undefined) return emoteMatch;
+
+  const userGuilds = getUserGuilds(message);
+  emoteMatch = userGuilds
+    .flatMap((guild) => guild.emojis.cache)
+    .find((emote) => emote.name.toLowerCase() === match.toLowerCase());
+  if (emoteMatch != undefined) return emoteMatch;
+
   emoteMatch = message.client.guilds.cache
     .flatMap((guild) => guild.emojis.cache)
     .find((emote) => emote.name.toLowerCase() === match.toLowerCase());

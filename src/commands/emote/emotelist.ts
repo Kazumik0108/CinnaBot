@@ -1,6 +1,7 @@
 // emotelist.ts
 import { MessageEmbed, Guild, GuildEmoji, Message, Collection } from 'discord.js';
 import { Command, CommandoClient, CommandoMessage } from 'discord.js-commando';
+import { getUserGuilds } from '../../functions/filters';
 
 interface emoteMessage {
   embed: MessageEmbed;
@@ -90,19 +91,7 @@ export default class serverEmoteList extends Command {
       return message;
     }
 
-    const userGuilds = message.client.guilds.cache
-      .filter((guild) => guild.member(message.author.id) != null)
-      .sort((guildA, guildB) => {
-        if (
-          guildA.name.toLowerCase() == message.guild?.name.toLowerCase() ||
-          guildA.name.toLowerCase() < guildB.name.toLowerCase()
-        ) {
-          return -1;
-        }
-        if (guildA.name.toLowerCase() > guildB.name.toLowerCase()) return 1;
-        return 0;
-      })
-      .map((guild) => guild);
+    const userGuilds: Guild[] = getUserGuilds(message).map((guild) => guild);
 
     const guildNames = userGuilds.map((guild, index) => `${index}: ${guild.name}`).join('\n');
     const prompt = 'choose a number below:\n```\n' + guildNames + '```\n or `cancel` to abort this command.\n';
