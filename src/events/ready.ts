@@ -100,6 +100,6 @@ export const main = (client: CommandoClient) => {
       .then((presence) =>
         console.log(`\nActivity set to '${presence.activities[0].type} ${presence.activities[0].name}'`),
       )
-      .catch(console.error);
+      .catch((error) => console.log('Failed to set activity: ', error));
   }
 };
