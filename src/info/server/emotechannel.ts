@@ -1,48 +1,46 @@
-// emotechannel.ts
+import { guildRinSolo, guildDrake, guildCinnaBot } from './guilds';
 
-interface server {
-  id: string;
-  name?: string;
-}
-
-export interface emoteChannel {
+export interface EmoteChannel {
   id: string;
   name?: string;
   guildID: string;
-  guildname?: string;
-  servers: server[];
+  guildName?: string;
+  servers: {
+    id: string;
+    name?: string;
+  }[];
 }
 
-export const emoteChannels: emoteChannel[] = [
+export const emoteChannels: EmoteChannel[] = [
   {
     id: '725027776691830844',
     name: 'emote-list',
-    guildID: '725009170839109682',
-    guildname: "Rin's Solo Camp",
+    guildID: guildRinSolo.id,
+    guildName: guildRinSolo.name,
     servers: [
       {
-        id: '725009170839109682',
-        name: "Rin's Solo Camp",
+        id: guildRinSolo.id,
+        name: guildRinSolo.name,
       },
       {
-        id: '791283144733098004',
-        name: "Drake's Emote Server",
+        id: guildDrake.id,
+        name: guildDrake.name,
       },
     ],
   },
   {
     id: '798741263490875403',
     name: 'development-debug',
-    guildID: '798740415192105010',
-    guildname: 'CinnaBot Development',
+    guildID: guildCinnaBot.id,
+    guildName: guildCinnaBot.name,
     servers: [
       {
-        id: '798740415192105010',
-        name: 'CinnaBot Development',
+        id: guildCinnaBot.id,
+        name: guildCinnaBot.name,
       },
       {
-        id: '725009170839109682',
-        name: "Rin's Solo Camp",
+        id: guildRinSolo.id,
+        name: guildRinSolo.name,
       },
     ],
   },
