@@ -1,8 +1,7 @@
 // ready.ts
 import { join } from 'path';
-import { reactMessages } from '../info/server/reactionroles';
-import { twitterUsers } from '../info/server/twitter';
-import { statuses } from '../info/botinfo';
+import { twitterUsers } from '../info/server/twitterUsers';
+import { Status, botStatuses } from '../info/botStatuses';
 import { ClientUser, TextChannel } from 'discord.js';
 import { CommandoClient } from 'discord.js-commando';
 import { config } from 'dotenv';
@@ -28,29 +27,6 @@ const startUpMessages = async (client: CommandoClient) => {
   });
 };
 
-const cacheReactionMessages = (client: CommandoClient) => {
-  const promises = reactMessages.map((reactMessage) => {
-    const guildChannel = client.channels.cache.get(reactMessage.channel?.id as string) as TextChannel;
-    return guildChannel.messages.fetch(reactMessage.id, true, false);
-  });
-
-  Promise.all(promises)
-    .then(async (messages) => {
-      for (const message of messages) {
-        const confirmation =
-          'Sucessfully added message ' +
-          message.id +
-          ' to cache from server ' +
-          message.guild?.name +
-          ' in channel ' +
-          (message.channel as TextChannel).name +
-          '.';
-        console.log(confirmation);
-      }
-    })
-    .catch((error) => console.log('Failed to cache a message: ', error));
-};
-
 const createTwitterStreams = (client: CommandoClient) => {
   twitterUsers.forEach((twitterUser) => {
     const stream = TwitterBot.stream('statuses/filter', { follow: twitterUser.id });
@@ -61,14 +37,24 @@ const createTwitterStreams = (client: CommandoClient) => {
       const url = `https://twitter.com/${tweet.user.screen_name}/status/${tweet.id_str}`;
       twitterUser.channels.forEach((twitterChannel) => {
         client.channels
-          .fetch(twitterChannel.id)
+          .fetch(twitterChannel)
           .then((channel) => (channel as TextChannel).send(url))
-          .catch((error) => console.log(`Failed to cache channel ${twitterChannel.id}: `, error));
+          .catch((error) => console.log(`Failed to cache channel ${twitterChannel}: `, error));
       });
     });
 
     console.log(`Successfully created stream event for Twitter ID ${twitterUser.handle}`);
   });
+};
+
+const chooseActivity = (): Status => {
+  const statusGroup = botStatuses[Math.floor(Math.random() * botStatuses.length)];
+  const status: Status = {
+    id: statusGroup.id,
+    name: statusGroup.name,
+    activity: statusGroup.activities[Math.floor(Math.random() * statusGroup.activities.length)],
+  };
+  return status;
 };
 
 export const main = (client: CommandoClient) => {
@@ -90,13 +76,12 @@ export const main = (client: CommandoClient) => {
       dirname: join(__dirname, '../commands/'),
     });
 
-  cacheReactionMessages(client);
   createTwitterStreams(client);
 
   function setStatus() {
-    const status = statuses[Math.floor(Math.random() * statuses.length)];
+    const status = chooseActivity();
     (client.user as ClientUser)
-      .setActivity(status.content, { type: status.id })
+      .setActivity(status.activity, { type: status.id })
       .then((presence) =>
         console.log(`\nActivity set to '${presence.activities[0].type} ${presence.activities[0].name}'`),
       )

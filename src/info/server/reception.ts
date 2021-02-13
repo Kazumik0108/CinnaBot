@@ -8,23 +8,23 @@ interface ReactionEmote {
 }
 
 export interface EmbedMessage {
-  id: string;
-  name?: string;
+  name: string;
+  channelID: string;
   embed: MessageEmbed;
   reactions: ReactionEmote[];
 }
 
-const welcomeName = 'welcome';
-const rulesName = 'rules';
-const accessRolesName = 'access roles';
-const colorRolesName = 'color roles';
+export const welcomeMessageTitle = "Welcome to Rin's Solo Camp!";
+export const rulesMessageTitle = 'Server Rules';
+export const accessRolesMessageTitle = 'Access Roles';
+export const colorRolesMessageTitle = 'Color Roles';
 
 // To properly cache the messages (in ready.ts), the message ids here should be manually-updated with the target id of the output message from the command embed.ts
 export const welcomeMessage: EmbedMessage = {
-  id: '808440097845673994',
-  name: welcomeName,
+  name: 'welcome',
+  channelID: '779044446104059914',
   embed: new MessageEmbed()
-    .setTitle("Welcome to Rin's Solo Camp!")
+    .setTitle(welcomeMessageTitle)
     .setColor('#0558cd')
     .setDescription('Thanks for joining us. Stay comfy and send your prayers to Shima Rin in <#725406708989427782>.')
     .setThumbnail('https://cdn.discordapp.com/emojis/725155394934145105.png?v=1'),
@@ -32,10 +32,10 @@ export const welcomeMessage: EmbedMessage = {
 };
 
 export const rulesMessage: EmbedMessage = {
-  id: '808440111536406598',
-  name: rulesName,
+  name: 'rules',
+  channelID: '779044446104059914',
   embed: new MessageEmbed()
-    .setTitle('Server Rules')
+    .setTitle(rulesMessageTitle)
     .setColor('#059ecd')
     .setDescription(
       'Please familiarize yourself with our rules below. To gain access to the rest of the server, react to the message with <:RinIcon:725037351486881824> to become a <@&747124541259776030>.',
@@ -75,10 +75,10 @@ export const rulesMessage: EmbedMessage = {
 };
 
 export const accessRolesMessage: EmbedMessage = {
-  id: '808440238154186782',
-  name: accessRolesName,
+  name: 'access roles',
+  channelID: '804157684591886356',
   embed: new MessageEmbed()
-    .setTitle('Access Roles')
+    .setTitle(accessRolesMessageTitle)
     .setColor('#fc9003')
     .setDescription('Get access to opt-in channels or Rythm commands.')
     .addFields([
@@ -106,10 +106,10 @@ export const accessRolesMessage: EmbedMessage = {
 };
 
 export const colorRolesMessage: EmbedMessage = {
-  id: '808440249054920715',
-  name: colorRolesName,
+  name: 'color roles',
+  channelID: '804157684591886356',
   embed: new MessageEmbed()
-    .setTitle('Color Roles')
+    .setTitle(colorRolesMessageTitle)
     .setColor('#991a09')
     .setDescription('Want to change your color? Currently, you can add and remove your colored roles infinite times.')
     .addFields([
@@ -199,3 +199,10 @@ export const colorRolesMessage: EmbedMessage = {
     },
   ],
 };
+
+export const allReceptionMessages: EmbedMessage[] = [
+  welcomeMessage,
+  rulesMessage,
+  accessRolesMessage,
+  colorRolesMessage,
+];

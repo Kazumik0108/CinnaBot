@@ -1,56 +1,64 @@
-// messageReactionAdd.ts
 import { GuildMember, MessageReaction, Role, User } from 'discord.js';
 import { CommandoClient } from 'discord.js-commando';
-import { reactEmotes, reactMessages } from '../info/server/reactionroles';
+import { allReceptionMessages } from '../info/server/reception';
 
-const getRoleID = (reaction: MessageReaction): string | undefined => {
-  const emote = reactEmotes.find((reactEmote) => (reaction.emoji.id === reactEmote.id ? true : false));
-  if (emote != undefined) return emote.roleID;
+const checkReactionRole = (reaction: MessageReaction, user: User) => {
+  const guild = reaction.message.guild;
+  if (guild == null) return;
+
+  const embeds = reaction.message.embeds;
+  if (embeds.length == 0) return;
+
+  const reactionMessage = allReceptionMessages.find((msg) => msg.embed.title === embeds[0].title);
+  if (reactionMessage == undefined || reactionMessage?.channelID != reaction.message.channel.id) return;
+
+  const reactionEmote = reactionMessage.reactions.find((emote) => emote.id == reaction.emoji.id);
+  if (reactionEmote == undefined) {
+    if (reaction.emoji.id == null) throw Error(`Could not remove the reaction ${reaction.emoji.name}`);
+    reaction.message.reactions.cache.get(reaction.emoji.id)?.remove();
+    return;
+  }
+
+  const role = guild.roles.cache.get(reactionEmote.roleID);
+  const guildMember = guild.members.cache.get(user.id);
+  if (role == undefined || guildMember == undefined) return;
+
+  updateGuildMember(role, guildMember);
+  reaction.users.remove(user.id);
 };
 
 const updateGuildMember = (role: Role, guildMember: GuildMember) => {
   const hasRole = guildMember.roles.cache.get(role.id);
+
   if (hasRole == undefined) {
-    guildMember.roles
-      .add(role)
-      .catch((error) => console.log(`Failed to add the role ${role.name} to ${guildMember.user.username}: `, error));
-  } else {
-    guildMember.roles
-      .remove(role)
-      .catch((error) =>
-        console.log(`Failed to remove the role ${role.name} from ${guildMember.user.username}: `, error),
-      );
+    try {
+      guildMember.roles.add(role);
+    } catch (error) {
+      console.log(`Failed to add the role ${role.name} to ${guildMember.user.username}: `, error);
+    } finally {
+      // eslint-disable-next-line no-unsafe-finally
+      return;
+    }
+  }
+
+  try {
+    guildMember.roles.remove(role);
+  } catch (error) {
+    console.log(`Failed to remove the role ${role.name} from ${guildMember.user.username}: `, error);
   }
 };
 
-const removeReactions = (reaction: MessageReaction) => {
-  const roleReactions = reaction.message.reactions.cache.filter((roleReaction) => roleReaction.users.cache.size > 0);
-  roleReactions.forEach((roleReaction) => {
-    const otherUsers = roleReaction.users.cache.filter((user) => user.id != roleReaction.message.author.id);
-    otherUsers.forEach((otherUser) => {
-      roleReaction.users
-        .remove(otherUser.id)
-        .catch((error) =>
-          console.log(`Failed to remove the reaction ${roleReaction.emoji.name} by ${otherUser.username}: `, error),
-        );
-    });
-  });
-};
+export const main = async (client: CommandoClient, partialReaction: MessageReaction, user: User) => {
+  if (user.bot) return;
 
-export const main = (client: CommandoClient, reaction: MessageReaction) => {
-  if (reaction.me) return;
+  let reaction = partialReaction;
+  try {
+    if (partialReaction.partial) {
+      reaction = await partialReaction.fetch();
+    }
+  } catch (e) {
+    console.log('Sth went wrong...', e);
+  }
 
-  const isRoleMessage = reactMessages.some((reactMessage) => reactMessage.id === reaction.message.id);
-  if (!isRoleMessage) return;
-  const guild = reaction.message.guild;
-  if (guild == null) return;
-
-  const roleID = getRoleID(reaction);
-  if (roleID == undefined) return reaction.message.reactions.cache.get(reaction.emoji.id as string)?.remove();
-
-  const role = guild.roles.cache.get(roleID);
-  const guildMember = guild.members.cache.get((reaction.users.cache.first() as User).id);
-  if (role == undefined || guildMember == undefined) return;
-  updateGuildMember(role, guildMember);
-  removeReactions(reaction);
+  checkReactionRole(reaction, user);
 };

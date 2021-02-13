@@ -1,13 +1,13 @@
 // message.ts
 import { ClientUser, GuildEmoji, TextChannel } from 'discord.js';
 import { CommandoClient, CommandoMessage } from 'discord.js-commando';
-import { reactions } from '../info/server/reactionbot';
+import { botReactions } from '../info/server/botReactions';
 import { getUserGuilds } from '../functions/filters';
 
 const checkMessageEmotes = (message: CommandoMessage): boolean => {
-  const hasColons = message.content.split(/:/).length > 2;
-  const notCode = message.content.split(/`/).length <= 1 && message.content.split(/\\/).length <= 1;
-  return hasColons && notCode;
+  const hasColonPair = message.content.split(/:/).length > 2;
+  const hasNoCode = message.content.split(/`/).length <= 1 && message.content.split(/\\/).length <= 1;
+  return hasColonPair && hasNoCode;
 };
 
 const checkMessageReacts = (message: CommandoMessage): boolean => {
@@ -27,7 +27,7 @@ const emoteReplace = (message: CommandoMessage) => {
     const emoteMatch = getEmoteMatch(message, regexMatch);
     if (emoteMatch == undefined) return substring;
 
-    return emoteMatch.animated ? `<a:${emoteMatch.name}:${emoteMatch.id}>` : `<:${emoteMatch.name}:${emoteMatch.id}>`;
+    return emoteMatch.toString();
   }
 };
 
@@ -88,7 +88,7 @@ const sendMessageWebhook = async (message: CommandoMessage, content: string) => 
 };
 
 const botReaction = (message: CommandoMessage) => {
-  reactions.forEach((reactionGroup) => {
+  botReactions.forEach((reactionGroup) => {
     const checkMatch = reactionGroup.emotes.some((reaction) => message.content.includes(reaction));
     if (checkMatch) reactionGroup.emotes.forEach((reaction) => message.react(reaction));
   });

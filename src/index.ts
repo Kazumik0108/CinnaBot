@@ -13,6 +13,7 @@ const client = new CommandoClient({
   owner: currentowner,
   invite: homeinvite,
   disableMentions: 'everyone',
+  partials: ['MESSAGE', 'REACTION'],
 });
 
 // Read client event files
@@ -20,8 +21,8 @@ readdir(join(__dirname, './events'), (error, files) => {
   if (error) return console.log(error);
   files.forEach((file) => {
     import(`./events/${file}`).then((event) => {
-      const eventName: any = file.split('.')[0];
-      client.on(eventName, event.main.bind(null, client));
+      const eventName = file.split('.')[0];
+      client.on(eventName as any, event.main.bind(null, client));
     });
   });
 });

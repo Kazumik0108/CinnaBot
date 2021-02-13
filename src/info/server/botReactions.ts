@@ -3,7 +3,7 @@ export interface ReactionGroup {
   emotes: string[];
 }
 
-export const reactions: ReactionGroup[] = [
+export const botReactions: ReactionGroup[] = [
   {
     name: 'rinhi',
     emotes: ['<:RinHi:725291274013376553>'],

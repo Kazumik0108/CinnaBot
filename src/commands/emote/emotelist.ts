@@ -9,15 +9,10 @@ interface emoteMessage {
   animatedList: string[];
 }
 
-const today = (): string => {
-  const date = new Date();
-  return date.toUTCString();
-};
-
 const emoteToText = (emotes: GuildEmoji[]): string[] => {
   return emotes
     .sort((a, b) => a.name.toLowerCase().localeCompare(b.name.toLowerCase()))
-    .map((emote) => (emote.animated ? `<a:${emote.name}:${emote.id}>` : `<:${emote.name}:${emote.id}>`));
+    .map((emote) => emote.toString());
 };
 
 export const displayEmotes = (message: CommandoMessage, emotes: string[]) => {
@@ -39,7 +34,7 @@ export const getGuildEmotes = async (guild: Guild): Promise<emoteMessage> => {
   const embedMessage = new MessageEmbed()
     .setTitle(`${guild.name} Emote List`)
     .setThumbnail(guild.iconURL() as string)
-    .setFooter(`Updated ${today()}`)
+    .setFooter(`Updated ${new Date().toUTCString()}`)
     .addFields([
       { name: 'Static Emotes', value: `(${emoteStatic.length}/100)`, inline: true },
       { name: 'Animated Emotes', value: `(${emoteAnimated.length}/100)`, inline: true },
@@ -88,7 +83,7 @@ export default class serverEmoteList extends Command {
     if (arg === '0') {
       const emoteMsg = await getGuildEmotes(message.guild as Guild);
       await sendGuildEmotes(message, emoteMsg);
-      return message;
+      return null;
     }
 
     const userGuilds: Guild[] = getUserGuilds(message).map((guild) => guild);
