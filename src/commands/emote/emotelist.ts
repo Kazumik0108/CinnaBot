@@ -1,7 +1,7 @@
 // emotelist.ts
 import { MessageEmbed, Guild, GuildEmoji, Message, Collection } from 'discord.js';
 import { Command, CommandoClient, CommandoMessage } from 'discord.js-commando';
-import { getUserGuilds } from '../../functions/filters';
+import { getUserGuilds } from '../../functions/parsers';
 
 interface emoteMessage {
   embed: MessageEmbed;
@@ -30,11 +30,11 @@ export const displayEmotes = (message: CommandoMessage, emotes: string[]) => {
 export const getGuildEmotes = async (guild: Guild): Promise<emoteMessage> => {
   const emoteStatic = guild.emojis.cache.filter((emote) => !emote.animated).map((emote) => emote);
   const emoteAnimated = guild.emojis.cache.filter((emote) => emote.animated).map((emote) => emote);
-  // Create the embed message as the header
+
   const embedMessage = new MessageEmbed()
     .setTitle(`${guild.name} Emote List`)
     .setThumbnail(guild.iconURL() as string)
-    .setFooter(`Updated ${new Date().toUTCString()}`)
+    .setTimestamp(new Date())
     .addFields([
       { name: 'Static Emotes', value: `(${emoteStatic.length}/100)`, inline: true },
       { name: 'Animated Emotes', value: `(${emoteAnimated.length}/100)`, inline: true },

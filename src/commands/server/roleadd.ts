@@ -1,7 +1,8 @@
 // roleadd.ts
-import { Guild, GuildMember, MessageEmbed, MessageReaction, PermissionResolvable } from 'discord.js';
+import { Guild, GuildMember, MessageEmbed, MessageReaction, PermissionResolvable, User } from 'discord.js';
 import { CommandoClient, Command, CommandoMessage } from 'discord.js-commando';
 import roleperms from '../../info/roleperms.json';
+import { ReactionOptionsYesNo, reactionFilter } from '../../functions/collectorFilters';
 
 interface promptArgs {
   roleName: string;
@@ -104,11 +105,17 @@ export default class roleadd extends Command {
       'verify the properties for the role you are creating.\nReact with 👍 to create the role. React with 👎 to cancel the command.',
     );
     const msg = await message.say(embedMessage);
-    msg.react('👍').then(() => msg.react('👎'));
 
-    const filter = (reaction: MessageReaction, user: GuildMember): boolean => {
-      return ['👍', '👎'].includes(reaction.emoji.name) && user.id === message.author.id;
+    const options: ReactionOptionsYesNo = {
+      yes: '👍',
+      no: '👎',
+      edit: '✏',
     };
+    for (const option of Object.values(options) as string[]) {
+      await msg.react(option);
+    }
+
+    const filter = (reaction: MessageReaction, user: User) => reactionFilter(message, options, reaction, user);
 
     msg
       .awaitReactions(filter, { max: 1, time: 10 * 1000, errors: ['time'] })

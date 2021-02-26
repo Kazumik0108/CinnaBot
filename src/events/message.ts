@@ -2,7 +2,8 @@
 import { ClientUser, GuildEmoji, TextChannel } from 'discord.js';
 import { CommandoClient, CommandoMessage } from 'discord.js-commando';
 import { botReactions } from '../info/server/botReactions';
-import { getUserGuilds } from '../functions/filters';
+import { getUserGuilds } from '../functions/parsers';
+import { EMOJI_FORMAT_REGEX } from '../functions/regexFilters';
 
 const checkMessageEmotes = (message: CommandoMessage): boolean => {
   const hasColonPair = message.content.split(/:/).length > 2;
@@ -17,8 +18,7 @@ const checkMessageReacts = (message: CommandoMessage): boolean => {
 };
 
 const emoteReplace = (message: CommandoMessage) => {
-  const regexEmote = /<a?:\w+:\d+>|(?<!\\):(\w+):/g;
-  const newMessage = message.content.replace(regexEmote, replaceMessageEmotes);
+  const newMessage = message.content.replace(EMOJI_FORMAT_REGEX, replaceMessageEmotes);
   if (message.content != newMessage) sendMessageWebhook(message, newMessage);
 
   function replaceMessageEmotes(substring: string, regexMatch: string): string {
@@ -94,10 +94,11 @@ const botReaction = (message: CommandoMessage) => {
   });
 };
 
-export const main = (client: CommandoClient, message: CommandoMessage) => {
+export default (client: CommandoClient, message: CommandoMessage) => {
+  if (checkMessageReacts(message)) botReaction(message);
+
   if (message.author.bot) return;
   if (message.channel.type === 'dm') return;
 
   if (checkMessageEmotes(message)) emoteReplace(message);
-  if (checkMessageReacts(message)) botReaction(message);
 };

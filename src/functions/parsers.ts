@@ -1,4 +1,3 @@
-// filter.ts
 import { Collection, Guild } from 'discord.js';
 import { CommandoMessage } from 'discord.js-commando';
 
