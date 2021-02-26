@@ -106,6 +106,7 @@ export default class addrole extends Command {
           const options = ['next', 'name', 'hoist', 'color', 'position', 'add', 'del', 'cancel'];
 
           collector.on('collect', (collect) => {
+            collector.resetTimer({ time: 30 * 1000 });
             const args: string = collect.content;
 
             // next
@@ -254,7 +255,7 @@ export default class addrole extends Command {
                 .edit(roleData)
                 .then(() =>
                   message
-                    .reply(`the role \`${role.name}\` has successfully been added.`)
+                    .reply(`the role \`${role.name}\` has successfully been updated.`)
                     .then((confirmMsg) => confirmMsg.delete({ timeout: 5000 })),
                 );
             } else {

@@ -1,13 +1,5 @@
 import { MessageEmbed } from 'discord.js';
-import {
-  accessRolesMessage,
-  accessRolesMessageTitle,
-  colorRolesMessage,
-  colorRolesMessageTitle,
-  EmbedMessage,
-  rulesMessage,
-  welcomeMessage,
-} from './reception';
+import { accessRolesMessage, colorRolesMessage, EmbedMessage, rulesMessage, welcomeMessage } from './reception';
 
 interface Channel {
   id: string;

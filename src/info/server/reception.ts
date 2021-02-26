@@ -1,4 +1,5 @@
 import { MessageEmbed } from 'discord.js';
+import { stripIndents } from 'common-tags';
 
 interface ReactionEmote {
   id: string;
@@ -48,9 +49,11 @@ export const rulesMessage: EmbedMessage = {
       },
       {
         name: '2. On NSFW/18+ content',
-        value:
-          'Yuru Camp is not a NSFW series and not all of our members are over 18. Keep the channels SFW and refrain from sending such images, text, and links.\n\n' +
-          'At minimum, spoiler tag any messages with questionable content.',
+        value: stripIndents`
+          Yuru Camp is not a NSFW series and not all of our members are over 18. Keep the channels SFW and refrain from sending such images, text, and links.
+          
+          At minimum, spoiler tag any messages with questionable content.,
+          `,
       },
       {
         name: '3. Spamming',
@@ -59,9 +62,10 @@ export const rulesMessage: EmbedMessage = {
       },
       {
         name: '4. Spoilers',
-        value:
-          'Keep spoilers for anime, manga, novels, etc. out of <#725009172357316698> and the voice channels. Not everybody reads or watches at the same pace. Ideally, spoiler-tag the content and mention the series so others are aware of what is being spoilered. This goes especially for seasonals.\n\n' +
-          'Yuru Camp spoilers specifically belong in <#796779279466758185>.',
+        value: stripIndents`
+          Keep spoilers for anime, manga, novels, etc. out of <#725009172357316698> and the voice channels. Not everybody reads or watches at the same pace. Ideally, spoiler-tag the content and mention the series so others are aware of what is being spoilered. This goes especially for seasonals.
+
+          Yuru Camp spoilers specifically belong in <#796779279466758185>.`,
       },
     ]),
   reactions: [
@@ -84,9 +88,9 @@ export const accessRolesMessage: EmbedMessage = {
     .addFields([
       {
         name: 'Key',
-        value:
-          "<:RinPinged:745677254696370266> : <@&796073053662216242> Access to <@!159985870458322944>'s dumping grounds.\n" +
-          "<:RinRelax:725059880771125339> : <@&779068605433118780> Access to all of <@!235088799074484224>'s music commands.",
+        value: stripIndents`
+          <:RinPinged:745677254696370266> : <@&796073053662216242> Access to <@!159985870458322944>'s dumping grounds.
+          <:RinRelax:725059880771125339> : <@&779068605433118780> Access to all of <@!235088799074484224>'s music commands.`,
       },
     ]),
   reactions: [
@@ -115,25 +119,25 @@ export const colorRolesMessage: EmbedMessage = {
     .addFields([
       {
         name: 'The highest role in the list will become the color for your username',
-        value:
-          '- If you do not have the role, reacting with the emote will give you the role.\n' +
-          '- If you already have the role, reacting with the emote wil remove the role.',
+        value: stripIndents`
+          - If you do not have the role, reacting with the emote will give you the role.
+          - If you already have the role, reacting with the emote wil remove the role.`,
       },
       {
         name: 'Key',
-        value:
-          '<:Blue:803862924950110210> : <@&779064341407858698>\n' +
-          '<:Cyan:803862924966756374> : <@&779064270893613086>\n' +
-          '<:LightGreen:803862925411745802> : <@&779063968194494474>\n' +
-          '<:DarkGreen:803862924992053249> : <@&779064181403811861>\n' +
-          '<:Yellow:803862925122338858> : <@&779064071780696074>\n' +
-          '<:Tan:803862925277265950> : <@&779065017609879593>\n' +
-          '<:Orange:803862925269794857> : <@&779064295312719892>\n' +
-          '<:Red:803862925219332106> : <@&779064099760898078>\n' +
-          '<:Pink:803862924875661333> : <@&779064227620192277>\n' +
-          '<:Lavender:803862925176602665> : <@&779065535987056680>\n' +
-          '<:Purple:803862925000441897> : <@&779064248188928001>\n' +
-          '<:Violet:803862925273464862> : <@&779064145378017310>',
+        value: stripIndents`
+          <:Blue:803862924950110210> : <@&779064341407858698>
+          <:Cyan:803862924966756374> : <@&779064270893613086>
+          <:LightGreen:803862925411745802> : <@&779063968194494474>
+          <:DarkGreen:803862924992053249> : <@&779064181403811861>
+          <:Yellow:803862925122338858> : <@&779064071780696074>
+          <:Tan:803862925277265950> : <@&779065017609879593>
+          <:Orange:803862925269794857> : <@&779064295312719892>
+          <:Red:803862925219332106> : <@&779064099760898078>
+          <:Pink:803862924875661333> : <@&779064227620192277>
+          <:Lavender:803862925176602665> : <@&779065535987056680>
+          <:Purple:803862925000441897> : <@&779064248188928001>
+          <:Violet:803862925273464862> : <@&779064145378017310>`,
       },
     ]),
   reactions: [

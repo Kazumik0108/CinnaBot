@@ -1,5 +1,6 @@
 import { Command, CommandoClient, CommandoMessage } from 'discord.js-commando';
 import { guildRinSolo } from '../../info/server/guilds';
+import { stripIndents } from 'common-tags';
 
 export default class embedPreFormatted extends Command {
   constructor(client: CommandoClient) {
@@ -27,12 +28,11 @@ export default class embedPreFormatted extends Command {
     const embeds = guildRinSolo.embed;
     const embedNames = embeds.map((embed) => embed.name);
 
-    const prompt =
-      `Select a pre-formatted embed message below from ${message.guild.name}.` +
-      '```\n' +
-      embedNames.join('\n') +
-      '```\n' +
-      'This message will automatically time out after 15 seconds.';
+    const prompt = stripIndents`Select a pre-formatted embed message below from ${message.guild.name}.
+      \`\`\`
+      ${embedNames}
+      \`\`\`
+      This message will automatically time out after 15 seconds.`;
     const msgPrompt = await message.say(prompt);
 
     const filter = (msg: CommandoMessage) =>
