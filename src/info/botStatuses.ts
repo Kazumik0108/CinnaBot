@@ -38,4 +38,18 @@ const watching: StatusGroup = {
   ],
 };
 
-export const botStatuses = [listening, watching];
+const createStatusArray = (statusGroups: StatusGroup[]): Status[] => {
+  const statusArray = [] as Status[];
+  for (const statusGroup of statusGroups) {
+    for (const activity of statusGroup.activities) {
+      statusArray.push({
+        id: statusGroup.id,
+        name: statusGroup.name,
+        activity: activity,
+      });
+    }
+  }
+  return statusArray;
+};
+
+export const botStatuses = createStatusArray([listening, watching]);
