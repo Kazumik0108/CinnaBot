@@ -1,5 +1,5 @@
 # Transpiled JavaScript files
-.build/
+dist/
 
 # Dependency directories
 node_modules/

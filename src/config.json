@@ -1,5 +1,9 @@
 {
-    "prefix": "+",
-    "currentowner": "210188048195911680",
-    "homeinvite": "https://discord.gg/6eacQ9rxDr"
+  "prefix": "+",
+  "prefixAlt": "=",
+  "currentowner": "210188048195911680",
+  "homeguild": "798740415192105010",
+  "homeinvite": "https://discord.gg/6eacQ9rxDr",
+  "cinnabot": "798741919533760543",
+  "shinshaTest": "801160383297617930"
 }

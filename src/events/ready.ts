@@ -2,10 +2,11 @@
 import { join } from 'path';
 import { twitterUsers } from '../info/server/twitterUsers';
 import { Status, botStatuses } from '../info/botStatuses';
-import { ClientUser, TextChannel } from 'discord.js';
+import { GuildMember, TextChannel } from 'discord.js';
 import { CommandoClient } from 'discord.js-commando';
 import { config } from 'dotenv';
 import Twit = require('twit');
+import { prefixAlt, homeguild, cinnabot, shinshaTest } from '../config.json';
 
 config({ path: join(__dirname, '../../process.env') });
 
@@ -16,14 +17,28 @@ const TwitterBot = new Twit({
   access_token_secret: process.env.ACCESS_TOKEN_SECRET,
 });
 
+const checkCinnaBot = async (client: CommandoClient) => {
+  const homeGuild = client.guilds.cache.get(homeguild);
+  if (homeGuild == undefined || client.user == null) return;
+
+  const CinnaBot = await homeGuild.members
+    .fetch(cinnabot)
+    .catch(() => console.log('An invalid user id was given for CinnaBot.'));
+  if (!(CinnaBot instanceof GuildMember) || CinnaBot.user.presence.status == 'offline') return;
+
+  if (client.user.id == shinshaTest) client.commandPrefix = prefixAlt;
+};
+
 const startUpMessages = async (client: CommandoClient) => {
+  if (client.user == null) return console.log('The client has not been registered.');
+
   const guilds = client.guilds.cache.sort((a, b) => a.name.toLowerCase().localeCompare(b.name.toLowerCase()));
 
-  console.log(`\nLogged in as ${(client.user as ClientUser).tag}! (${(client.user as ClientUser).id})\n`);
+  console.log(`\nLogged in as ${client.user.tag}! (${client.user.id})\n`);
   console.log('List of guilds for this application:');
 
   guilds.forEach((guild) => {
-    console.log(`\t${guild.id} | ${guild.name}`);
+    console.log(`\t${guild.id} | ${guild}`);
   });
 };
 
@@ -48,18 +63,14 @@ const createTwitterStreams = (client: CommandoClient) => {
 };
 
 const chooseActivity = (): Status => {
-  const statusGroup = botStatuses[Math.floor(Math.random() * botStatuses.length)];
-  const status: Status = {
-    id: statusGroup.id,
-    name: statusGroup.name,
-    activity: statusGroup.activities[Math.floor(Math.random() * statusGroup.activities.length)],
-  };
+  const status = botStatuses[Math.floor(Math.random() * botStatuses.length)];
   return status;
 };
 
-export const main = (client: CommandoClient) => {
+export default (client: CommandoClient) => {
+  checkCinnaBot(client);
+
   startUpMessages(client);
-  setInterval(setStatus, 10 * 60 * 1000);
 
   client.registry
     .registerDefaultTypes()
@@ -78,9 +89,13 @@ export const main = (client: CommandoClient) => {
 
   createTwitterStreams(client);
 
+  setStatus();
+  setInterval(setStatus, 10 * 60 * 1000);
+
   function setStatus() {
     const status = chooseActivity();
-    (client.user as ClientUser)
+    if (client.user == null) return console.log('The client has not been registered.');
+    client.user
       .setActivity(status.activity, { type: status.id })
       .then((presence) =>
         console.log(`\nActivity set to '${presence.activities[0].type} ${presence.activities[0].name}'`),
