@@ -101,4 +101,13 @@ export default (client: CommandoClient, message: CommandoMessage) => {
   if (message.channel.type === 'dm') return;
 
   if (checkMessageEmotes(message)) emoteReplace(message);
+
+  if (message.channel.id == '725406708989427782') {
+    const RinBlessed = client.emojis.cache.get('725155394934145105');
+    if (RinBlessed == undefined) return;
+    const regex = new RegExp(`^(?:^(${RinBlessed}\\s*)+)$`, 'g');
+    const match = message.content.match(regex);
+
+    if (match == null) message.delete();
+  }
 };
