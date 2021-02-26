@@ -2,7 +2,9 @@ import { GuildMember, TextChannel } from 'discord.js';
 import { CommandoClient } from 'discord.js-commando';
 import { guildRinSolo } from '../info/server/guilds';
 
-export const main = (client: CommandoClient, member: GuildMember) => {
+export default (client: CommandoClient, member: GuildMember) => {
+  if (member.guild.id != guildRinSolo.id) return;
+
   const logChannel = client.channels.cache.get(guildRinSolo.logChannel) as TextChannel | undefined;
   if (logChannel == undefined) {
     console.log(`The channel ID ${guildRinSolo.logChannel} does not exist in channels cache.`);

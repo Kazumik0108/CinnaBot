@@ -48,7 +48,7 @@ const updateGuildMember = (role: Role, guildMember: GuildMember) => {
   }
 };
 
-export const main = async (client: CommandoClient, partialReaction: MessageReaction, user: User) => {
+export default async (client: CommandoClient, partialReaction: MessageReaction, user: User) => {
   if (user.bot) return;
 
   let reaction = partialReaction;

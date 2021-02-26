@@ -3,7 +3,7 @@ import { CommandoClient, CommandoMessage } from 'discord.js-commando';
 import { guildRinSolo } from '../info/server/guilds';
 import { getGuildEmotes, sendGuildEmotes } from '../commands/emote/emotelist';
 
-export const main = async (client: CommandoClient, emoji: GuildEmoji) => {
+export default async (client: CommandoClient, emoji: GuildEmoji) => {
   const hasSubscribers = guildRinSolo.emoteServers.find((serverID) => serverID == emoji.guild.id);
   if (hasSubscribers == undefined) return;
 

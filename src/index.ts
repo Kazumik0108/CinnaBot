@@ -1,4 +1,4 @@
-// index.ts
+import { ClientEvents, Intents } from 'discord.js';
 import { CommandoClient } from 'discord.js-commando';
 import { config } from 'dotenv';
 import { readdir } from 'fs';
@@ -7,25 +7,27 @@ import { prefix, currentowner, homeinvite } from './config.json';
 
 config({ path: join(__dirname, '../process.env') });
 
-// Commando client
+const myIntents = new Intents(Intents.NON_PRIVILEGED);
+myIntents.remove(['DIRECT_MESSAGE_TYPING', 'GUILD_VOICE_STATES', 'GUILD_MESSAGE_TYPING']);
+myIntents.add(['GUILD_MEMBERS', 'GUILD_PRESENCES']);
+
 const client = new CommandoClient({
   commandPrefix: prefix,
   owner: currentowner,
   invite: homeinvite,
   disableMentions: 'everyone',
   partials: ['MESSAGE', 'REACTION'],
+  ws: { intents: myIntents },
 });
 
-// Read client event files
 readdir(join(__dirname, './events'), (error, files) => {
   if (error) return console.log(error);
   files.forEach((file) => {
     import(`./events/${file}`).then((event) => {
       const eventName = file.split('.')[0];
-      client.on(eventName as any, event.main.bind(null, client));
+      client.on(<keyof ClientEvents>eventName, event.default.bind(null, client));
     });
   });
 });
 
-// log into Discord with client
 client.login(process.env.CLIENT_TOKEN);

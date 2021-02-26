@@ -1,3 +1,3 @@
-export const main = (error: Error) => {
+export default (error: Error) => {
   console.log('An error has occurred: ', error);
 };
