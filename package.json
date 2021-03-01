@@ -19,9 +19,12 @@
     "discord.js-commando": "^0.12.2",
     "dotenv": "^8.2.0",
     "fs": "0.0.1-security",
+    "mysql": "^2.18.1",
     "path": "^0.12.7",
+    "reflect-metadata": "^0.1.10",
     "requires-regex": "^1.0.4",
-    "twit": "^2.2.11"
+    "twit": "^2.2.11",
+    "typeorm": "^0.2.31"
   },
   "engines": {
     "node": "14.15.4",
@@ -34,6 +37,7 @@
   },
   "devDependencies": {
     "@types/common-tags": "^1.8.0",
+    "@types/mysql": "^2.15.17",
     "@types/node": "^14.14.24",
     "@types/twit": "^2.2.28",
     "@typescript-eslint/eslint-plugin": "^4.14.2",

@@ -7,6 +7,9 @@ import { CommandoClient } from 'discord.js-commando';
 import { config } from 'dotenv';
 import Twit = require('twit');
 import { prefixAlt, homeguild, cinnabot, shinshaTest } from '../config.json';
+import { prepareConnection } from '../db';
+import { getConnection, getRepository } from 'typeorm';
+import { Guild } from '../entity/Guild';
 
 config({ path: join(__dirname, '../../process.env') });
 
@@ -67,7 +70,7 @@ const chooseActivity = (): Status => {
   return status;
 };
 
-export default (client: CommandoClient) => {
+export default async (client: CommandoClient) => {
   checkCinnaBot(client);
 
   startUpMessages(client);
@@ -91,6 +94,21 @@ export default (client: CommandoClient) => {
 
   setStatus();
   setInterval(setStatus, 10 * 60 * 1000);
+
+  await prepareConnection();
+  const conn = getConnection();
+  const guildRepo = getRepository(Guild);
+  const guildQuery = await guildRepo.createQueryBuilder('guild').getMany();
+  const guildsNotInDB = client.guilds.cache.filter((g) => !guildQuery.some((guild) => guild.guildID == g.id));
+
+  if (guildsNotInDB.size != 0) {
+    guildsNotInDB.forEach((g) => {
+      const guild = new Guild();
+      guild.guildID = g.id;
+      guild.guildName = g.name;
+      guildRepo.save(guild);
+    });
+  }
 
   function setStatus() {
     const status = chooseActivity();

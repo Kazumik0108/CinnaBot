@@ -1,11 +1,10 @@
-# Transpiled JavaScript files
 dist/
-
-# Dependency directories
 node_modules/
-
-# dotenv environment variables file
 *.env
-
-# logs
 *.log
+.idea/
+.vscode/
+node_modules/
+build/
+tmp/
+temp/
