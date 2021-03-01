@@ -13,12 +13,20 @@ export default async (client: CommandoClient, message: CommandoMessage) => {
   const nonNitroWebhookMessage = await handleNonNitroEmoji(message);
   const spamEmojiDeleteEmbed = await handleSpamEmojiChannels(message);
   if (spamEmojiDeleteEmbed != null) {
-    message.delete().catch((e) => console.log('Failed to delete a message: ', e));
+    if (message.deleted == false) message.delete().catch((e) => console.log('Failed to delete a message: ', e));
     if (nonNitroWebhookMessage == null) {
       sendDeleteLog(message, spamEmojiDeleteEmbed);
     } else {
       const botSpamEmojiDeleted = await handleSpamEmojiChannels(nonNitroWebhookMessage);
-      if (botSpamEmojiDeleted != null) sendDeleteLog(message, spamEmojiDeleteEmbed);
+      if (botSpamEmojiDeleted != null) {
+        if (nonNitroWebhookMessage.deleted == false) {
+          nonNitroWebhookMessage.delete().catch((e) => console.log('Failed to delete a message: ', e));
+        }
+        sendDeleteLog(message, spamEmojiDeleteEmbed);
+      }
     }
+  }
+  if (nonNitroWebhookMessage != null && message.deleted == false) {
+    message.delete().catch((e) => console.log('Failed to delete a message: ', e));
   }
 };
