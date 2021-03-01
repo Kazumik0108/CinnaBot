@@ -1,15 +1,10 @@
-import { MessageReaction, User } from 'discord.js';
-import { CommandoMessage } from 'discord.js-commando';
+import { Message, MessageReaction, User } from 'discord.js';
 
 export interface MessageFilterOptions {
   args: string[];
 }
 
-export const messageFilter = (
-  message: CommandoMessage,
-  options: MessageFilterOptions,
-  collectMessage: CommandoMessage,
-): boolean => {
+export const messageFilter = (options: MessageFilterOptions, collectMessage: Message): boolean => {
   const parse = collectMessage.content.split(/ +/);
   const arg = parse.slice(0, 1).join('').toLowerCase();
   return options.args.includes(arg) ? true : false;
@@ -30,7 +25,7 @@ export interface ReactionOptionsBackNext {
 }
 
 export const reactionFilter = (
-  message: CommandoMessage,
+  message: Message,
   options: ReactionOptionsYesNo | ReactionOptionsBackNext,
   collectReaction: MessageReaction,
   collectReactionUser: User,

@@ -36,8 +36,7 @@ export default async (client: CommandoClient) => {
   await handleTestBot(client, user);
   await handleGuildList(client);
   await handleTwitterStreams(client);
+
   await handleClientActivity(user);
-  setInterval(async () => {
-    await handleClientActivity(user);
-  }, 10 * 60 * 1000);
+  setInterval(async () => await handleClientActivity(user), 10 * 60 * 1000);
 };

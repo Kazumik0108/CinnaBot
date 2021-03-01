@@ -31,7 +31,7 @@ export const guildRinSolo: Guild = {
       'Rin is love, Rin is life.\n\n' + 'Check out the rules in <#779044446104059914> to gain access to the server.',
     )
     .setImage('https://raw.githubusercontent.com/Kazumik0108/CinnaBot/main/images/welcome/RinWave1.gif'),
-  emoteServers: ['791283144733098004'],
+  emoteServers: ['791283144733098004', '814105105027563531', '814178586587824198'],
 };
 
 // export const guildDrake: Guild = {

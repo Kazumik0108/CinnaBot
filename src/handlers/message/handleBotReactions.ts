@@ -18,7 +18,9 @@ export const handleBotReactions = async (message: CommandoMessage) => {
       for (const reaction of reactionGroup.emojis) {
         const emoji = message.client.emojis.cache.get(reaction);
         if (emoji == undefined) continue;
-        await message.react(emoji);
+        await message
+          .react(emoji)
+          .catch(() => console.log(`Could not react to the message in ${message.channel} with ${emoji}`));
       }
     }
   }
