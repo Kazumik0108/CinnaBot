@@ -31,8 +31,8 @@ export const handleEmojiListCollector = async (message: CommandoMessage) => {
     if (collected.some((m) => m.content.toLowerCase() == 'cancel')) {
       (await message.reply('Canceling the command.')).delete({ timeout: 5 * 1000 });
     }
-    for (const [_, m] of collected) {
-      m.delete({ timeout: 5 * 1000 });
-    }
+    collected.forEach((m) => {
+      m.delete({ timeout: 3 * 1000 }).catch(() => console.log(`Failed to delete a message in ${m.channel}`));
+    });
   });
 };
