@@ -1,11 +1,28 @@
-// emit.ts
+import { stripIndents } from 'common-tags';
 import { Guild, GuildEmoji, GuildMember } from 'discord.js';
 import { Command, CommandoClient, CommandoMessage } from 'discord.js-commando';
-import events from '../../info/clientevents.json';
+
+import { ClientEvents } from '../../types';
 
 interface promptArgs {
   event: string;
 }
+
+const clientEventsArray = () => {
+  const events = Object.keys(ClientEvents);
+  const columnOne = events.slice(0, Math.ceil(events.length / 2));
+  const columnTwo = events.slice(Math.ceil(events.length / 2), events.length);
+
+  const width = 30;
+  const table = [];
+  for (const i in columnOne) {
+    let line = columnOne[i].padEnd(width, ' ');
+    if (columnTwo[i]) line = line.concat(`| ${columnTwo[i]}`);
+    table.push(line);
+  }
+
+  return table.join('\n');
+};
 
 export default class emit extends Command {
   constructor(client: CommandoClient) {
@@ -20,79 +37,41 @@ export default class emit extends Command {
       args: [
         {
           key: 'event',
-          prompt:
-            'Enter an event to emit in this server. The list of client events are shown below.\n' +
-            '```\n' +
-            events.join('\n') +
-            '```',
+          prompt: stripIndents`
+            Enter an event to emit in this server. The list of client events are shown below.\`\`\`${clientEventsArray()}\`\`\``,
           type: 'string',
-          oneOf: [...events, 'cancel'],
+          validate: (event: string) => event in ClientEvents,
         },
       ],
     });
   }
 
   async run(message: CommandoMessage, { event }: promptArgs): Promise<null> {
-    switch (event.toLocaleLowerCase()) {
-      // channel events
-
-      // debug
-
-      // emoji events
-      case 'emojicreate': {
-        const emojiCreate = new GuildEmoji(message.client, { name: 'create' }, message.guild as Guild);
-        message.client.emit('emojiCreate', emojiCreate);
+    switch (event) {
+      case ClientEvents.emojiCreate: {
+        const emojiCreate = new GuildEmoji(message.client, { name: event }, message.guild as Guild);
+        message.client.emit(event, emojiCreate);
         break;
       }
-
-      case 'emojidelete': {
-        const emojiDelete = new GuildEmoji(message.client, { name: 'delete' }, message.guild as Guild);
-        message.client.emit('emojiDelete', emojiDelete);
+      case ClientEvents.emojiDelete: {
+        const emojiDelete = new GuildEmoji(message.client, { name: event }, message.guild as Guild);
+        message.client.emit(event, emojiDelete);
         break;
       }
-
-      case 'emojiupdate': {
-        const emojiOld = new GuildEmoji(message.client, { name: 'old' }, message.guild as Guild);
-        const emojiNew = new GuildEmoji(message.client, { name: 'new' }, message.guild as Guild);
-        message.client.emit('emojiUpdate', emojiOld, emojiNew);
+      case ClientEvents.emojiUpdate: {
+        const emojiOld = new GuildEmoji(message.client, { name: event + 'old' }, message.guild as Guild);
+        const emojiNew = new GuildEmoji(message.client, { name: event + 'new' }, message.guild as Guild);
+        message.client.emit(event, emojiOld, emojiNew);
         break;
       }
-
-      // error
-
-      // guild events
-      case 'guildmemberadd': {
-        message.client.emit('guildMemberAdd', message.member as GuildMember);
+      case ClientEvents.guildMemberAdd: {
+        message.client.emit(event, message.member as GuildMember);
         break;
       }
-
-      // invalidated
-
-      // invite events
-
-      // message events
-
-      // presenceupdate
-
-      // ratelimit
-
-      // ready
-
-      // role events
-
-      // shard events
-
-      // typingstart
-
-      // voicestateupdate
-
-      // warn
-
-      // webhookupdate
-
-      // properties
+      default: {
+        message.say(`No callback has been added for the event \`${event}\`.`);
+      }
     }
-
     return null;
   }
 }

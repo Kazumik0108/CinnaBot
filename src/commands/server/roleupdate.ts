@@ -3,11 +3,13 @@ import { Message, Role } from 'discord.js';
 import { Command, CommandoClient, CommandoMessage } from 'discord.js-commando';
 
 import { getGuildRole, GetGuildRoleOptions } from '../../functions/guildFilters';
-// eslint-disable-next-line prettier/prettier
-import { handleRoleDataConfirmation, RoleDataConfirmationOptions } from '../../handlers/roles/handleRoleDataConfirmation';
+import { handleRoleDataArgs, roleArgsPrompt, RoleDataArgs } from '../../handlers/roles/handleRoleDataArgs';
+import {
+  handleRoleDataConfirmation,
+  RoleDataConfirmationOptions,
+} from '../../handlers/roles/handleRoleDataConfirmation';
 import { handleRoleDataEdit } from '../../handlers/roles/handleRoleDataEdit';
 import { getRoleData, handleRoleDataEmbed, RoleDataEmbedInputs } from '../../handlers/roles/handleRoleDataEmbed';
-import { RoleDataArgs, roleDataEditParser } from '../../parsers/roleDataEditParser';
 
 interface promptArgs {
   role: Role;
@@ -51,24 +53,13 @@ export default class addrole extends Command {
         },
         {
           key: 'args',
-          prompt: stripIndents`
-            Specify any other options for the role using the key phrases below, or \`default\` to use the default role settings. Separate arguments with commas. Specified permissions are to be added to or deleted from default role permissions. 
-            \`\`\`
-            color <hex color>
-            hoist <true/false>
-            position <number>
-            perm add <perm>
-            perm del <perm>
-
-            ---EXAMPLE---
-            color #aa01bb, hoist true, position 3, perm add manage_roles manage_channels, perm del create_instant_invite
-            \`\`\``,
+          prompt: roleArgsPrompt(),
           type: 'string',
           validate: (args: string) => {
             const match = args.match(/^(?:color|hoist|position|perm add|perm del|default)/);
             return match != null ? true : false;
           },
-          parse: (args: string, m: Message) => roleDataEditParser(args, m),
+          parse: (args: string, m: Message) => handleRoleDataArgs(args, m),
         },
       ],
     });
