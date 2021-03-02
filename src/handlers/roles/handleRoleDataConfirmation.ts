@@ -22,7 +22,7 @@ export const handleRoleDataConfirmation = async (message: CommandoMessage, confi
   const filter = (r: MessageReaction, u: User) => reactionFilter(message, options, r, u);
   const collector = confirm.watch.createReactionCollector(filter, { time: 15 * 1000 });
 
-  collector.on('collect', async (r: MessageReaction, u: User) => {
+  collector.on('collect', async (r: MessageReaction) => {
     const guild = <Guild>message.guild;
     if (r.emoji.name == options.yes) {
       guild.roles.create({ data: confirm.options.roleData });
