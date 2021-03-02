@@ -6,9 +6,26 @@ import { convertDecimalToHexColor } from '../../functions/embedFilters';
 export interface RoleDataEmbedInputs {
   message: Message | CommandoMessage;
   roleData: RoleData;
+  role?: Role;
 }
 
-const createdRoleDataEmbed = (data: RoleData, message: Message, role?: Role) => {
+export const getRoleData = (role: Role) => {
+  const data: RoleData = {
+    name: role.name,
+    color: role.color,
+    hoist: role.hoist,
+    position: role.rawPosition,
+    mentionable: role.mentionable,
+    permissions: role.permissions,
+  };
+  return data;
+};
+
+export const handleRoleDataEmbed = async (options: RoleDataEmbedInputs) => {
+  const message = options.message;
+  const data = options.roleData;
+  const role = options.role;
+
   const perms = <string[]>data.permissions?.toString().split(/,/g);
   const permsFirst = perms.slice(0, Math.ceil(perms.length / 2));
   const permsLast = perms.slice(Math.ceil(perms.length / 2), perms.length);
@@ -17,13 +34,15 @@ const createdRoleDataEmbed = (data: RoleData, message: Message, role?: Role) => 
   const isMentionable = (<boolean>data.mentionable).toString().toUpperCase();
   const isHoisted = (<boolean>data.hoist).toString().toUpperCase();
 
+  const position = data.position;
   const colorHex = convertDecimalToHexColor(<number>data.color);
+  const description = role != undefined ? role.toString() : data.name;
 
   const embed = new MessageEmbed()
     .setAuthor(message.author.username, message.author.displayAvatarURL())
     .setTitle('Role Properties')
     .setColor(<ColorResolvable>data.color)
-    .setDescription(role || data.name)
+    .setDescription(description)
     .addFields([
       {
         name: 'Admin',
@@ -42,7 +61,7 @@ const createdRoleDataEmbed = (data: RoleData, message: Message, role?: Role) => 
       },
       {
         name: 'Position',
-        value: data.position,
+        value: position,
         inline: true,
       },
       {
@@ -61,22 +80,5 @@ const createdRoleDataEmbed = (data: RoleData, message: Message, role?: Role) => 
         inline: true,
       },
     ]);
-  return embed;
-};
-
-export const getRoleData = (role: Role) => {
-  const data: RoleData = {
-    name: role.name,
-    color: role.color,
-    hoist: role.hoist,
-    position: role.rawPosition,
-    mentionable: role.mentionable,
-    permissions: role.permissions,
-  };
-  return data;
-};
-
-export const handleRoleDataEmbed = async (options: RoleDataEmbedInputs) => {
-  const embed = createdRoleDataEmbed(options.roleData, options.message);
   return embed;
 };

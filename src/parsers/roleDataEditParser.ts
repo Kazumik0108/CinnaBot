@@ -1,11 +1,11 @@
 import { ColorResolvable, Guild, Message, Role } from 'discord.js';
 
 import { hexColorParser, hexColorValidator } from '../functions/embedFilters';
+
 import ROLE_PERMS = require('../info/ROLE_PERMS.json');
 
 export interface RoleDataArgs {
   default: boolean;
-  cancel: boolean;
   color?: ColorResolvable | null;
   hoist?: boolean | null;
   position?: number | null;
@@ -16,12 +16,10 @@ export interface RoleDataArgs {
 export const roleDataEditParser = async (contents: string, message: Message) => {
   const args = contents.split(/,/g).map((s) => s.trim());
   const def = args[0].toLowerCase() == 'default' ? true : false;
-  const cancel = args[0].toLowerCase() == 'cancel' ? true : false;
   const parsed: RoleDataArgs = {
     default: def,
-    cancel: cancel,
   };
-  if (parsed.default == true || parsed.cancel == true) return parsed;
+  if (parsed.default == true) return parsed;
 
   for (const arg of args) {
     if (!arg.startsWith('perm add') && !arg.startsWith('perm del')) {

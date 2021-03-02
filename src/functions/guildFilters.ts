@@ -1,14 +1,11 @@
-import {
-  CategoryChannel,
-  GuildChannel,
-  GuildMember,
-  NewsChannel,
-  Role,
-  StoreChannel,
-  TextChannel,
-  VoiceChannel,
-} from 'discord.js';
-import { CommandoClient, CommandoMessage } from 'discord.js-commando';
+// eslint-disable-next-line prettier/prettier
+import { CategoryChannel, Guild, GuildChannel, GuildMember, Message, NewsChannel, StoreChannel, TextChannel, VoiceChannel } from 'discord.js';
+import { CommandoClient, CommandoGuild, CommandoMessage } from 'discord.js-commando';
+
+export interface GetGuildRoleOptions {
+  message: Message | CommandoMessage;
+  property: string;
+}
 
 export const getGuildMember = (userID: string, message: CommandoMessage): GuildMember | null => {
   const guildMember = message.guild.member(userID);
@@ -16,9 +13,10 @@ export const getGuildMember = (userID: string, message: CommandoMessage): GuildM
   return null;
 };
 
-export const getGuildRole = (roleID: string, message: CommandoMessage): Role | null => {
-  const guildRole = message.guild.roles.cache.get(roleID);
-  if (guildRole != null) return guildRole;
+export const getGuildRole = (options: GetGuildRoleOptions) => {
+  const guild = <CommandoGuild | Guild>options.message.guild;
+  const role = guild.roles.cache.find((r) => r.id == options.property || r.name == options.property);
+  if (role != undefined) return role;
   return null;
 };
 

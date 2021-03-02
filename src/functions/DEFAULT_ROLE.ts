@@ -1,7 +1,6 @@
-import { Client, ColorResolvable, Guild, PermissionResolvable, Role, RoleData, SnowflakeUtil } from 'discord.js';
-import { CommandoClient, CommandoGuild } from 'discord.js-commando';
+import { ColorResolvable, PermissionResolvable, RoleData } from 'discord.js';
 
-export const DEFAULT_ROLE_DATA = (client: CommandoClient | Client, guild: CommandoGuild | Guild, name: string) => {
+export const DEFAULT_ROLE_DATA = (name: string) => {
   const data: RoleData = {
     name: name,
     color: <ColorResolvable>0,

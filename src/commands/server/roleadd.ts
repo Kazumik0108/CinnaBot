@@ -3,6 +3,7 @@ import { Message } from 'discord.js';
 import { Command, CommandoClient, CommandoMessage } from 'discord.js-commando';
 
 import { DEFAULT_ROLE_DATA } from '../../functions/DEFAULT_ROLE';
+import { getGuildRole, GetGuildRoleOptions } from '../../functions/guildFilters';
 import { handleRoleDataEmbed, RoleDataEmbedInputs } from '../../handlers/roles/handleRoleData';
 // eslint-disable-next-line prettier/prettier
 import { handleRoleDataConfirmation, RoleDataConfirmationOptions } from '../../handlers/roles/handleRoleDataConfirmation';
@@ -31,6 +32,15 @@ export default class roleadd extends Command {
           key: 'name',
           prompt: 'Specify the name of the role you would like to create.',
           type: 'string',
+          validate: (name: string, m: Message) => {
+            const options: GetGuildRoleOptions = {
+              message: m,
+              property: name,
+            };
+            const role = getGuildRole(options);
+            return role == null ? true : false;
+          },
+          error: 'A role with this already exists in this server. Try another name.',
         },
         {
           key: 'args',
@@ -47,30 +57,18 @@ export default class roleadd extends Command {
             color #aa01bb, hoist true, position 3, perm add manage_roles manage_channels, perm del create_instant_invite
             \`\`\``,
           type: 'string',
-          validate: (contents: string) => {
-            const match = contents.match(/^(?:color|hoist|position|perm add|perm del|default|cancel)/);
+          validate: (args: string) => {
+            const match = args.match(/^(?:color|hoist|position|perm add|perm del|default)/);
             return match != null ? true : false;
           },
-          parse: (contents: string, m: Message) => roleDataEditParser(contents, m),
+          parse: (args: string, m: Message) => roleDataEditParser(args, m),
         },
       ],
     });
   }
 
   async run(message: CommandoMessage, { name, args }: PromptArgs) {
-    if (args.cancel == true) {
-      (await message.reply('Cancelled command.')).delete({ timeout: 5 * 1000 });
-      return null;
-    }
-    const roleExists = message.guild.roles.cache.find((r) => name == r.name);
-    if (roleExists != undefined) {
-      (await message.reply(`a role with the name ${name} already exists in ${message.guild.name}.`)).delete({
-        timeout: 10 * 1000,
-      });
-      return null;
-    }
-
-    let data = DEFAULT_ROLE_DATA(message.client, message.guild, name);
+    let data = DEFAULT_ROLE_DATA(name);
     data = args.default == true ? data : await handleRoleDataEdit(data, args);
     const options: RoleDataEmbedInputs = {
       message: message,
