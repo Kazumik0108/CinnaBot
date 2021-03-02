@@ -1,18 +1,13 @@
-import { MessageReaction, User } from 'discord.js';
-import { CommandoMessage } from 'discord.js-commando';
+import { Message, MessageReaction, User } from 'discord.js';
 
 export interface MessageFilterOptions {
   args: string[];
 }
 
-export const messageFilter = (
-  message: CommandoMessage,
-  options: MessageFilterOptions,
-  collectMessage: CommandoMessage,
-): boolean => {
-  const parse = collectMessage.content.split(/ +/);
+export const messageFilter = (opt: MessageFilterOptions, msg: Message): boolean => {
+  const parse = msg.content.split(/ +/);
   const arg = parse.slice(0, 1).join('').toLowerCase();
-  return options.args.includes(arg) ? true : false;
+  return opt.args.includes(arg) ? true : false;
 };
 
 export interface ReactionOptionsYesNo {
@@ -30,11 +25,11 @@ export interface ReactionOptionsBackNext {
 }
 
 export const reactionFilter = (
-  message: CommandoMessage,
-  options: ReactionOptionsYesNo | ReactionOptionsBackNext,
-  collectReaction: MessageReaction,
-  collectReactionUser: User,
+  msg: Message,
+  opt: ReactionOptionsYesNo | ReactionOptionsBackNext,
+  react: MessageReaction,
+  user: User,
 ): boolean => {
-  const reactions: string[] = Object.values(options);
-  return reactions.includes(collectReaction.emoji.name) && collectReactionUser.id === message.author.id;
+  const reactions: string[] = Object.values(opt);
+  return user.id === msg.author.id && reactions.includes(react.emoji.name);
 };

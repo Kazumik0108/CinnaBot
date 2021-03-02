@@ -1,18 +1,9 @@
-import {
-  GuildEmoji,
-  Message,
-  MessageCollector,
-  MessageEmbed,
-  MessageEmbedAuthor,
-  MessageReaction,
-  ReactionCollector,
-  Role,
-  TextChannel,
-  User,
-} from 'discord.js';
-import { CommandoMessage } from 'discord.js-commando';
 import { stripIndents } from 'common-tags';
-import { MessageFilterOptions, messageFilter, ReactionOptionsBackNext, reactionFilter } from './collectorFilters';
+// eslint-disable-next-line prettier/prettier
+import { GuildEmoji, MessageCollector, MessageEmbed, MessageEmbedAuthor, MessageReaction, ReactionCollector, Role, TextChannel, User } from 'discord.js';
+import { CommandoMessage } from 'discord.js-commando';
+
+import { messageFilter, MessageFilterOptions, reactionFilter, ReactionOptionsBackNext } from './collectorFilters';
 import { getGuildMember } from './guildFilters';
 import { HEX_REGEX, HEX_SHORT_TO_LONG_REGEX, ID_USER_REGEX } from './regexFilters';
 
@@ -44,6 +35,19 @@ const replaceShortToLongHexColor = (substring: string): string => {
 
 export const convertShortToLongHexColor = (colorShort: string): string => {
   return colorShort.replace(HEX_SHORT_TO_LONG_REGEX, replaceShortToLongHexColor);
+};
+
+export const convertDecimalToHexColor = (decimal: number) => {
+  let hex = decimal.toString(16).toUpperCase();
+  while (hex.length < 6) {
+    hex = '0'.concat(hex);
+  }
+  return hex.startsWith('#') ? hex : '#'.concat(hex);
+};
+
+export const convertHexToDecimalColor = (hex: string) => {
+  const decimal = hex.startsWith('#') ? parseInt(hex.slice(1), 16) : parseInt(hex, 16);
+  return decimal;
 };
 
 export const hintEmbedMessage = async (message: CommandoMessage) => {
@@ -284,7 +288,7 @@ export const editEmbedMessage = async (
   const options: MessageFilterOptions = {
     args: MESSAGE_EMBED_KEYS,
   };
-  const filter = (msg: CommandoMessage) => messageFilter(message, options, msg);
+  const filter = (msg: CommandoMessage) => messageFilter(options, msg);
   const collector = message.channel.createMessageCollector(filter, { time: 30 * 1000 });
 
   collector.on('collect', (collect: CommandoMessage) => {

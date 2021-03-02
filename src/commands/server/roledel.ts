@@ -1,20 +1,13 @@
-// roledel.ts
-import { Guild, GuildMember, MessageEmbed, MessageReaction, Role } from 'discord.js';
+import { Message, Role } from 'discord.js';
 import { Command, CommandoClient, CommandoMessage } from 'discord.js-commando';
 
-interface promptArgs {
-  roleName: string;
-}
+import { getGuildRole, GetGuildRoleOptions } from '../../functions/guildFilters';
+// eslint-disable-next-line prettier/prettier
+import { handleRoleDataConfirmation, RoleDataConfirmationOptions } from '../../handlers/roles/handleRoleDataConfirmation';
+import { getRoleData, handleRoleDataEmbed, RoleDataEmbedInputs } from '../../handlers/roles/handleRoleDataEmbed';
 
-function getMessageEmbed(role: Role) {
-  const embedMessage = new MessageEmbed()
-    .setTitle('Delete Role')
-    .setDescription(`<@&${role.id}>`)
-    .setColor(role.hexColor)
-    .addField('Color', role.hexColor.toUpperCase(), true)
-    .addField('Admin', role.permissions.toArray().includes('ADMINISTRATOR').toString().toUpperCase(), true)
-    .addField('Permissions', `${role.permissions.toArray().join('\n')}`);
-  return embedMessage;
+interface promptArgs {
+  role: Role;
 }
 
 export default class addrole extends Command {
@@ -31,62 +24,48 @@ export default class addrole extends Command {
       examples: ['+roledel Gems'],
       args: [
         {
-          key: 'roleName',
+          key: 'role',
           prompt: 'Specify the name of the role you want to delete.',
           type: 'string',
+          validate: (name: string, m: Message) => {
+            const options: GetGuildRoleOptions = {
+              message: m,
+              property: name,
+            };
+            const role = getGuildRole(options);
+            return role != null ? true : false;
+          },
+          parse: (name: string, m: Message) => {
+            const options: GetGuildRoleOptions = {
+              message: m,
+              property: name,
+            };
+            const role = <Role>getGuildRole(options);
+            return role;
+          },
+          error: 'No roles with this name exist in this server. Try another name.',
         },
       ],
     });
   }
 
-  async run(message: CommandoMessage, { roleName }: promptArgs): Promise<null> {
-    // Abort command if no role exists with the specified name in the server
-    const roles = (message.guild as Guild).roles.cache.filter((guildRole) => guildRole.name === roleName);
-    if (roles.size === 0) {
-      message
-        .reply(`there is no role with the name \`${roleName}\`.`)
-        .then((reply) => reply.delete({ timeout: 10 * 1000 }));
-      return null;
-    }
-    const role = roles.first() as Role;
-
-    // ask the user to confirm deleting the role
-    const embedMessage = getMessageEmbed(role!);
-    const reply = await message.reply(
-      'verify the role you want to delete.\nReact with 👍 to delete the role. React with 👎 to cancel the command.',
-    );
-    const msg = await message.say(embedMessage);
-    msg.react('👍').then(() => msg.react('👎'));
-
-    const filter = (reaction: MessageReaction, user: GuildMember): boolean => {
-      return ['👍', '👎'].includes(reaction.emoji.name) && user.id === message.author.id;
+  async run(message: CommandoMessage, { role }: promptArgs) {
+    const data = getRoleData(role);
+    const options: RoleDataEmbedInputs = {
+      message: message,
+      roleData: data,
+      role: role,
     };
 
-    msg
-      .awaitReactions(filter, { max: 1, time: 10 * 1000, errors: ['time'] })
-      .then((collected) => {
-        const reaction = collected.first() as MessageReaction;
-        if (reaction.emoji.name === '👍') {
-          role
-            .delete()
-            .then(() =>
-              message
-                .reply(`the role \`${roleName}\` has successfully been deleted.`)
-                .then((confirmMsg) => confirmMsg.delete({ timeout: 5000 })),
-            )
-            .catch((error) => message.say(error));
-        } else {
-          message.reply('canceling command.').then((cancelMsg) => cancelMsg.delete({ timeout: 3000 }));
-        }
-      })
-      .catch(() => {
-        message.reply('the command has timed out.').then((abortMsg) => abortMsg.delete({ timeout: 5000 }));
-      })
-      .finally(() => {
-        reply.delete({ timeout: 3000 });
-        msg.delete({ timeout: 3000 });
-      });
+    const embed = handleRoleDataEmbed(options);
+    const reply = await message.reply('Confirm with a reaction to delete the role or abort the command.', embed);
 
+    const confirm: RoleDataConfirmationOptions = {
+      options: options,
+      watch: reply,
+      type: 'delete',
+    };
+    await handleRoleDataConfirmation(message, confirm);
     return null;
   }
 }
