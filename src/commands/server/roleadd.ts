@@ -1,24 +1,17 @@
-// roleadd.ts
-import { Guild, GuildMember, MessageEmbed, MessageReaction, PermissionResolvable, User } from 'discord.js';
-import { CommandoClient, Command, CommandoMessage } from 'discord.js-commando';
-import roleperms from '../../info/roleperms.json';
-import { ReactionOptionsYesNo, reactionFilter } from '../../functions/collectorFilters';
+import { stripIndents } from 'common-tags';
+import { Message } from 'discord.js';
+import { Command, CommandoClient, CommandoMessage } from 'discord.js-commando';
 
-interface promptArgs {
-  roleName: string;
-  roleColor: string;
-  rolePerms: string;
-}
+import { DEFAULT_ROLE_DATA } from '../../functions/DEFAULT_ROLE';
+import { handleRoleDataEmbed, RoleDataEmbedInputs } from '../../handlers/roles/handleRoleData';
+// eslint-disable-next-line prettier/prettier
+import { handleRoleDataConfirmation, RoleDataConfirmationOptions } from '../../handlers/roles/handleRoleDataConfirmation';
+import { handleRoleDataEdit } from '../../handlers/roles/handleRoleDataEdit';
+import { RoleDataArgs, roleDataEditParser } from '../../parsers/roleDataEditParser';
 
-function getMessageEmbed(name: string, hexColor: string, perms: string[]): MessageEmbed {
-  const embedMessage = new MessageEmbed()
-    .setTitle('Add Role')
-    .setDescription(name)
-    .setColor(hexColor)
-    .addField('Color', hexColor, true)
-    .addField('Admin', perms.includes('ADMINISTRATOR').toString().toUpperCase(), true)
-    .addField('Permissions', `${perms.join('\n')}`);
-  return embedMessage;
+interface PromptArgs {
+  name: string;
+  args: RoleDataArgs;
 }
 
 export default class roleadd extends Command {
@@ -27,7 +20,7 @@ export default class roleadd extends Command {
       name: 'roleadd',
       group: 'server',
       memberName: 'roleadd',
-      description: 'Creates a named role within the server with optional colors and permissions.',
+      description: 'Creates a named role within the server.',
       guildOnly: true,
       clientPermissions: ['MANAGE_ROLES'],
       userPermissions: ['MANAGE_ROLES'],
@@ -35,120 +28,63 @@ export default class roleadd extends Command {
       examples: ['+roleadd Gems', '+roleadd Gems #012345', '+roleadd Gems #012345 MANAGE_CHANNELS, MANAGE_EMOJIS'],
       args: [
         {
-          key: 'roleName',
+          key: 'name',
           prompt: 'Specify the name of the role you would like to create.',
           type: 'string',
         },
         {
-          key: 'roleColor',
-          prompt: 'Specify the hex code of the color for this role. Enter `0` to use the default color.',
+          key: 'args',
+          prompt: stripIndents`
+            Specify any other options for the role using the key phrases below, or \`default\` to use the default role settings. Separate arguments with commas. Specified permissions are to be added to or deleted from default role permissions. 
+            \`\`\`
+            color <hex color>
+            hoist <true/false>
+            position <number>
+            perm add <perm>
+            perm del <perm>
+
+            ---EXAMPLE---
+            color #aa01bb, hoist true, position 3, perm add manage_roles manage_channels, perm del create_instant_invite
+            \`\`\``,
           type: 'string',
-        },
-        {
-          key: 'rolePerms',
-          prompt:
-            'Specify the permissions for this role, separated by commas and no spaces. Type `DEFAULT` to use the following permissions:\n' +
-            '```\n' +
-            'VIEW_CHANNEL, SEND_MESSAGES, ADD_REACTIONS, USE_EXTERNAL_EMOJIS' +
-            '```',
-          type: 'string',
-          oneOf: roleperms.concat('DEFAULT'),
+          validate: (contents: string) => {
+            const match = contents.match(/^(?:color|hoist|position|perm add|perm del|default|cancel)/);
+            return match != null ? true : false;
+          },
+          parse: (contents: string, m: Message) => roleDataEditParser(contents, m),
         },
       ],
     });
   }
 
-  async run(message: CommandoMessage, { roleName, roleColor, rolePerms }: promptArgs): Promise<null> {
-    // Abort command if roleName already exists in the server
-    const name = await (message.guild as Guild).roles
-      .fetch()
-      .then((roles) => {
-        if (roles.cache.some((role) => role.name === roleName)) {
-          message
-            .reply(`There is already a role with the name \`${roleName}\`. Please try another name.`)
-            .then((msg) => msg.delete({ timeout: 5000 }));
-          return null;
-        } else {
-          return roleName;
-        }
-      })
-      .catch(console.error);
-    if (name === null) return null;
-
-    // Check for a valid hex color code
-    // Set the color to the default Discord color, otherwise
-    let color = roleColor;
-    if (color !== '0') {
-      const hexRegex = /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/;
-      color = roleColor.match(hexRegex) ? parseInt(roleColor.slice(1), 16).toString() : '#000000';
-    } else {
-      color = '#000000';
+  async run(message: CommandoMessage, { name, args }: PromptArgs) {
+    if (args.cancel == true) {
+      (await message.reply('Cancelled command.')).delete({ timeout: 5 * 1000 });
+      return null;
     }
-
-    // Validate the permission inputs, unless default is specified
-    // If none are valid, set to default
-    let perms = rolePerms.split(/,/).map((perm) => perm.trim().toUpperCase());
-    if (perms[0].toLowerCase() !== 'default') {
-      perms = perms.filter((perm) => roleperms.includes(perm));
-      if (perms.length === 0) {
-        perms = ['VIEW_CHANNEL', 'SEND_MESSAGES', 'ADD_REACTIONS', 'USE_EXTERNAL_EMOJIS'];
-      }
-    } else {
-      perms = ['VIEW_CHANNEL', 'SEND_MESSAGES', 'ADD_REACTIONS', 'USE_EXTERNAL_EMOJIS'];
-    }
-
-    // Confirm with the user the role name, color, and additional permissions
-    // Proceed with creating the role if confirmed
-    // Cancel the command if rejected
-    const embedMessage = getMessageEmbed(name as string, color, perms);
-    const reply = await message.reply(
-      'verify the properties for the role you are creating.\nReact with 👍 to create the role. React with 👎 to cancel the command.',
-    );
-    const msg = await message.say(embedMessage);
-
-    const options: ReactionOptionsYesNo = {
-      yes: '👍',
-      no: '👎',
-      edit: '✏',
-    };
-    for (const option of Object.values(options) as string[]) {
-      await msg.react(option);
-    }
-
-    const filter = (reaction: MessageReaction, user: User) => reactionFilter(message, options, reaction, user);
-
-    msg
-      .awaitReactions(filter, { max: 1, time: 10 * 1000, errors: ['time'] })
-      .then((collected) => {
-        const reaction = collected.first() as MessageReaction;
-        if (reaction.emoji.name === '👍') {
-          const guild = message.client.guilds.cache.get((message.guild as Guild).id) as Guild;
-          guild.roles
-            .create({
-              data: {
-                name: name as string,
-                color: color,
-                permissions: perms as PermissionResolvable,
-              },
-            })
-            .then((role) =>
-              message
-                .reply(`The role <@&${role.id}> has been created successfully.`)
-                .then((confirmMsg) => confirmMsg.delete({ timeout: 5000 })),
-            )
-            .catch(console.error);
-        } else {
-          message.reply('canceling command.').then((cancelMsg) => cancelMsg.delete({ timeout: 3000 }));
-        }
-      })
-      .catch(() => {
-        message.reply('the command has timed out.').then((abortMsg) => abortMsg.delete({ timeout: 5000 }));
-      })
-      .finally(() => {
-        reply.delete({ timeout: 3000 });
-        msg.delete({ timeout: 3000 });
+    const roleExists = message.guild.roles.cache.find((r) => name == r.name);
+    if (roleExists != undefined) {
+      (await message.reply(`a role with the name ${name} already exists in ${message.guild.name}.`)).delete({
+        timeout: 10 * 1000,
       });
+      return null;
+    }
 
+    let data = DEFAULT_ROLE_DATA(message.client, message.guild, name);
+    data = args.default == true ? data : await handleRoleDataEdit(data, args);
+    const options: RoleDataEmbedInputs = {
+      message: message,
+      roleData: data,
+    };
+    const embed = await handleRoleDataEmbed(options);
+    const reply = await message.reply('Confirm with a reaction to create the role or abort the command.', embed);
+
+    const confirm: RoleDataConfirmationOptions = {
+      options: options,
+      watch: reply,
+      type: 'add',
+    };
+    await handleRoleDataConfirmation(message, confirm);
     return null;
   }
 }
