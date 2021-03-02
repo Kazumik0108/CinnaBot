@@ -1,8 +1,8 @@
-import { RoleDataEmbedInputs } from './handleRoleData';
 import { Guild, Message, MessageReaction, Role, User } from 'discord.js';
 import { CommandoMessage } from 'discord.js-commando';
 
 import { reactionFilter, ReactionOptionsYesNo } from '../../functions/collectorFilters';
+import { RoleDataEmbedInputs } from './handleRoleDataEmbed';
 
 export interface RoleDataConfirmationOptions {
   options: RoleDataEmbedInputs;

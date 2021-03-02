@@ -4,41 +4,35 @@ import { RoleDataArgs } from '../../parsers/roleDataEditParser';
 
 export const handleRoleDataEdit = (data: RoleData, args: RoleDataArgs) => {
   const dataEdit = data;
-  for (const [k, v] of Object.entries(args)) {
-    if (v == null) continue;
-    switch (k) {
-      case 'color': {
-        dataEdit.color = <string>v;
-        break;
-      }
-      case 'hoist': {
-        dataEdit.hoist = <boolean>v;
-        break;
-      }
-      case 'position': {
-        dataEdit.position = <number>v;
-        break;
-      }
-      case 'permAdd': {
-        for (const p of v) {
-          const perm = <PermissionString>p;
-          const perms = dataEdit.permissions as PermissionString[];
-          if (!perms.includes(perm)) {
-            (dataEdit.permissions as PermissionString[]).push(perm);
-          }
+  if (args.color) {
+    dataEdit.color = args.color;
+  }
+  if (args.hoist) {
+    dataEdit.hoist = args.hoist;
+  }
+  if (args.position) {
+    dataEdit.position = args.position;
+  }
+  if (args.permAdd) {
+    for (const p of args.permAdd) {
+      if (p) {
+        const perm = <PermissionString>p;
+        const perms = <PermissionString[]>dataEdit.permissions;
+        if (!perms.includes(perm)) {
+          (<PermissionString[]>dataEdit.permissions).push(perm);
         }
-        break;
       }
-      case 'permDel': {
-        for (const p of v) {
-          const perm = <PermissionString>p;
-          const perms = dataEdit.permissions as PermissionString[];
-          if (perms.includes(perm)) {
-            const pos = perms.indexOf(perm);
-            (dataEdit.permissions as PermissionString[]).splice(pos, 1);
-          }
+    }
+  }
+  if (args.permDel) {
+    for (const p of args.permDel) {
+      if (p) {
+        const perm = <PermissionString>p;
+        const perms = <PermissionString[]>dataEdit.permissions;
+        if (perms.includes(perm)) {
+          const pos = perms.indexOf(perm);
+          (<PermissionString[]>dataEdit.permissions).splice(pos, 1);
         }
-        break;
       }
     }
   }
