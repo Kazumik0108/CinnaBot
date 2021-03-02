@@ -4,10 +4,10 @@ import { Command, CommandoClient, CommandoMessage } from 'discord.js-commando';
 
 import { DEFAULT_ROLE_DATA } from '../../functions/DEFAULT_ROLE';
 import { getGuildRole, GetGuildRoleOptions } from '../../functions/guildFilters';
-import { handleRoleDataEmbed, RoleDataEmbedInputs } from '../../handlers/roles/handleRoleData';
 // eslint-disable-next-line prettier/prettier
 import { handleRoleDataConfirmation, RoleDataConfirmationOptions } from '../../handlers/roles/handleRoleDataConfirmation';
 import { handleRoleDataEdit } from '../../handlers/roles/handleRoleDataEdit';
+import { handleRoleDataEmbed, RoleDataEmbedInputs } from '../../handlers/roles/handleRoleDataEmbed';
 import { RoleDataArgs, roleDataEditParser } from '../../parsers/roleDataEditParser';
 
 interface PromptArgs {
@@ -69,12 +69,13 @@ export default class roleadd extends Command {
 
   async run(message: CommandoMessage, { name, args }: PromptArgs) {
     let data = DEFAULT_ROLE_DATA(name);
-    data = args.default == true ? data : await handleRoleDataEdit(data, args);
+    data = args.default == true ? data : handleRoleDataEdit(data, args);
     const options: RoleDataEmbedInputs = {
       message: message,
       roleData: data,
     };
-    const embed = await handleRoleDataEmbed(options);
+
+    const embed = handleRoleDataEmbed(options);
     const reply = await message.reply('Confirm with a reaction to create the role or abort the command.', embed);
 
     const confirm: RoleDataConfirmationOptions = {

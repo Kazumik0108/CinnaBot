@@ -1,8 +1,8 @@
+import { RoleDataEmbedInputs } from './handleRoleData';
 import { Guild, Message, MessageReaction, Role, User } from 'discord.js';
 import { CommandoMessage } from 'discord.js-commando';
 
 import { reactionFilter, ReactionOptionsYesNo } from '../../functions/collectorFilters';
-import { RoleDataEmbedInputs } from './handleRoleData';
 
 export interface RoleDataConfirmationOptions {
   options: RoleDataEmbedInputs;
@@ -37,6 +37,12 @@ export const handleRoleDataConfirmation = async (message: CommandoMessage, confi
           const role = <Role>guild.roles.cache.find((r) => r.name == confirm.options.roleData.name);
           await role.delete().catch((e) => console.log('Failed to delete a role: ', e));
           (await message.say(`Succcessfully deleted the role ${role.name}.`)).delete({ timeout: 5 * 1000 });
+          break;
+        }
+        case 'update': {
+          const role = <Role>guild.roles.cache.find((r) => r.name == confirm.options.roleData.name);
+          await role.edit(confirm.options.roleData).catch((e) => console.log('Failed to edit a role: ', e));
+          (await message.say(`Successfully edited the role ${role.name}.`)).delete({ timeout: 5 * 1000 });
           break;
         }
       }

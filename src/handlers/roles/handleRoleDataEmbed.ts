@@ -16,12 +16,12 @@ export const getRoleData = (role: Role) => {
     hoist: role.hoist,
     position: role.rawPosition,
     mentionable: role.mentionable,
-    permissions: role.permissions,
+    permissions: role.permissions.toArray(),
   };
   return data;
 };
 
-export const handleRoleDataEmbed = async (options: RoleDataEmbedInputs) => {
+export const handleRoleDataEmbed = (options: RoleDataEmbedInputs) => {
   const message = options.message;
   const data = options.roleData;
   const role = options.role;

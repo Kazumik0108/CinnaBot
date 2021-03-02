@@ -1,10 +1,10 @@
-import { Message, PermissionResolvable, Role, RoleData } from 'discord.js';
+import { Message, Role } from 'discord.js';
 import { Command, CommandoClient, CommandoMessage } from 'discord.js-commando';
 
 import { getGuildRole, GetGuildRoleOptions } from '../../functions/guildFilters';
-import { handleRoleDataEmbed, RoleDataEmbedInputs } from '../../handlers/roles/handleRoleData';
 // eslint-disable-next-line prettier/prettier
 import { handleRoleDataConfirmation, RoleDataConfirmationOptions } from '../../handlers/roles/handleRoleDataConfirmation';
+import { getRoleData, handleRoleDataEmbed, RoleDataEmbedInputs } from '../../handlers/roles/handleRoleDataEmbed';
 
 interface promptArgs {
   role: Role;
@@ -50,21 +50,14 @@ export default class addrole extends Command {
   }
 
   async run(message: CommandoMessage, { role }: promptArgs) {
-    const data: RoleData = {
-      name: role.name,
-      color: role.color,
-      hoist: role.hoist,
-      position: role.rawPosition,
-      mentionable: role.mentionable,
-      permissions: role.permissions.toArray(),
-    };
+    const data = getRoleData(role);
     const options: RoleDataEmbedInputs = {
       message: message,
       roleData: data,
       role: role,
     };
 
-    const embed = await handleRoleDataEmbed(options);
+    const embed = handleRoleDataEmbed(options);
     const reply = await message.reply('Confirm with a reaction to delete the role or abort the command.', embed);
 
     const confirm: RoleDataConfirmationOptions = {
