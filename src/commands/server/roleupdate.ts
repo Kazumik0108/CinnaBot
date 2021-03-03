@@ -1,4 +1,3 @@
-import { stripIndents } from 'common-tags';
 import { Message, Role } from 'discord.js';
 import { Command, CommandoClient, CommandoMessage } from 'discord.js-commando';
 
@@ -11,7 +10,7 @@ import {
 import { handleRoleDataEdit } from '../../handlers/roles/handleRoleDataEdit';
 import { getRoleData, handleRoleDataEmbed, RoleDataEmbedInputs } from '../../handlers/roles/handleRoleDataEmbed';
 
-interface promptArgs {
+interface PromptArgs {
   role: Role;
   args: RoleDataArgs;
 }
@@ -65,7 +64,7 @@ export default class addrole extends Command {
     });
   }
 
-  async run(message: CommandoMessage, { role, args }: promptArgs) {
+  async run(message: CommandoMessage, { role, args }: PromptArgs) {
     let data = getRoleData(role);
     data = handleRoleDataEdit(data, args);
     const options: RoleDataEmbedInputs = {

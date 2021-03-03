@@ -6,7 +6,7 @@ import { getGuildRole, GetGuildRoleOptions } from '../../functions/guildFilters'
 import { handleRoleDataConfirmation, RoleDataConfirmationOptions } from '../../handlers/roles/handleRoleDataConfirmation';
 import { getRoleData, handleRoleDataEmbed, RoleDataEmbedInputs } from '../../handlers/roles/handleRoleDataEmbed';
 
-interface promptArgs {
+interface PromptArgs {
   role: Role;
 }
 
@@ -49,7 +49,7 @@ export default class addrole extends Command {
     });
   }
 
-  async run(message: CommandoMessage, { role }: promptArgs) {
+  async run(message: CommandoMessage, { role }: PromptArgs) {
     const data = getRoleData(role);
     const options: RoleDataEmbedInputs = {
       message: message,

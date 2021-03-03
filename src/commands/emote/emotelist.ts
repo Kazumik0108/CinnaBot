@@ -2,7 +2,7 @@ import { Command, CommandoClient, CommandoMessage } from 'discord.js-commando';
 import { handleEmojiListCollector } from '../../handlers/emoji/handleEmojiListCollector';
 import { handleEmojiListGuild } from '../../handlers/emoji/handleEmojiListGuild';
 
-interface promptArgs {
+interface PromptArgs {
   index: string;
 }
 
@@ -35,7 +35,7 @@ export default class serverEmoteList extends Command {
     });
   }
 
-  async run(message: CommandoMessage, { index }: promptArgs) {
+  async run(message: CommandoMessage, { index }: PromptArgs) {
     if (index == '0') {
       await handleEmojiListGuild(message, message.guild);
       return null;
