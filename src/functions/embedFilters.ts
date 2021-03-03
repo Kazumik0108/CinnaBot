@@ -3,7 +3,8 @@ import { stripIndents } from 'common-tags';
 import { GuildEmoji, MessageCollector, MessageEmbed, MessageEmbedAuthor, MessageReaction, ReactionCollector, Role, TextChannel, User } from 'discord.js';
 import { CommandoMessage } from 'discord.js-commando';
 
-import { messageFilter, MessageFilterOptions, reactionFilter, ReactionOptionsBackNext } from './collectorFilters';
+// eslint-disable-next-line prettier/prettier
+import { MessageOptions, messageOptionsFilter, ReactionOptionsBackNext, reactionOptionsFilter } from './collectorFilters';
 import { getGuildMember } from './guildFilters';
 import { HEX_REGEX, HEX_SHORT_TO_LONG_REGEX, ID_USER_REGEX } from './regexFilters';
 
@@ -248,7 +249,7 @@ export const hintEmbedMessage = async (message: CommandoMessage) => {
   }
 
   const filter = (collectReaction: MessageReaction, collectUser: User) =>
-    reactionFilter(message, options, collectReaction, collectUser);
+    reactionOptionsFilter(message, options, collectReaction, collectUser);
 
   const collector = hintReactMessage.createReactionCollector(filter, { time: 15 * 1000 });
 
@@ -285,10 +286,10 @@ export const editEmbedMessage = async (
 ) => {
   const embedEdit = messageEmbed.embeds[0];
 
-  const options: MessageFilterOptions = {
+  const options: MessageOptions = {
     args: MESSAGE_EMBED_KEYS,
   };
-  const filter = (msg: CommandoMessage) => messageFilter(options, msg);
+  const filter = (msg: CommandoMessage) => messageOptionsFilter(options, msg);
   const collector = message.channel.createMessageCollector(filter, { time: 30 * 1000 });
 
   collector.on('collect', (collect: CommandoMessage) => {

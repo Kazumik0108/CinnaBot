@@ -1,6 +1,6 @@
 import { PermissionString, RoleData } from 'discord.js';
 
-import { RoleDataArgs } from '../../parsers/roleDataEditParser';
+import { RoleDataArgs } from './handleRoleDataArgs';
 
 export const handleRoleDataEdit = (data: RoleData, args: RoleDataArgs) => {
   const dataEdit = data;

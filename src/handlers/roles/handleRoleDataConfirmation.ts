@@ -1,7 +1,7 @@
 import { Guild, Message, MessageReaction, Role, User } from 'discord.js';
 import { CommandoMessage } from 'discord.js-commando';
 
-import { reactionFilter, ReactionOptionsYesNo } from '../../functions/collectorFilters';
+import { reactionOptionsFilter, ReactionOptionsYesNo } from '../../functions/collectorFilters';
 import { RoleDataEmbedInputs } from './handleRoleDataEmbed';
 
 export interface RoleDataConfirmationOptions {
@@ -19,7 +19,7 @@ export const handleRoleDataConfirmation = async (message: CommandoMessage, confi
     await confirm.watch.react(option);
   }
 
-  const filter = (react: MessageReaction, user: User) => reactionFilter(message, options, react, user);
+  const filter = (react: MessageReaction, user: User) => reactionOptionsFilter(message, options, react, user);
   const collector = confirm.watch.createReactionCollector(filter, { time: 15 * 1000 });
 
   collector.on('collect', async (react: MessageReaction) => {

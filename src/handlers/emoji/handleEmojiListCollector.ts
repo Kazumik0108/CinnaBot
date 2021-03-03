@@ -1,6 +1,7 @@
-import { Message, Collection } from 'discord.js';
+import { Collection, Message } from 'discord.js';
 import { CommandoMessage } from 'discord.js-commando';
-import { MessageFilterOptions, messageFilter } from '../../functions/collectorFilters';
+
+import { MessageOptions, messageOptionsFilter } from '../../functions/collectorFilters';
 import { getUserGuilds } from '../../functions/parsers';
 import { handleEmojiListGuild } from './handleEmojiListGuild';
 
@@ -11,10 +12,10 @@ export const handleEmojiListCollector = async (message: CommandoMessage) => {
 
   (await message.reply(prompt)).delete({ timeout: 30 * 1000 });
 
-  const options: MessageFilterOptions = {
+  const options: MessageOptions = {
     args: userGuilds.map((_, i) => String(i)),
   };
-  const filter = (msg: Message) => messageFilter(options, msg);
+  const filter = (msg: Message) => messageOptionsFilter(options, msg);
   const collector = message.channel.createMessageCollector(filter, { time: 30 * 1000 });
 
   collector.on('collect', async (collect: Message) => {

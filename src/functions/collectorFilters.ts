@@ -1,10 +1,17 @@
 import { Message, MessageReaction, User } from 'discord.js';
 
-export interface MessageFilterOptions {
+import { EMOJI_REGEX } from './regexFilters';
+
+export interface MessageOptions {
   args: string[];
 }
 
-export const messageFilter = (opt: MessageFilterOptions, msg: Message): boolean => {
+export const messageEmojiFilter = (msg: Message, message: Message) => {
+  const emoji = msg.content.match(EMOJI_REGEX);
+  return emoji != null ? true : false;
+};
+
+export const messageOptionsFilter = (opt: MessageOptions, msg: Message): boolean => {
   const parse = msg.content.split(/ +/);
   const arg = parse.slice(0, 1).join('').toLowerCase();
   return opt.args.includes(arg) ? true : false;
@@ -24,12 +31,17 @@ export interface ReactionOptionsBackNext {
   last?: string;
 }
 
-export const reactionFilter = (
+export const reactionAnyFilter = (msg: Message, react: MessageReaction, user: User) => {
+  const emoji = msg.client.emojis.cache.find((e) => e.name == react.emoji.name);
+  return user.id == msg.author.id && emoji != undefined;
+};
+
+export const reactionOptionsFilter = (
   msg: Message,
   opt: ReactionOptionsYesNo | ReactionOptionsBackNext,
   react: MessageReaction,
   user: User,
-): boolean => {
+) => {
   const reactions: string[] = Object.values(opt);
-  return user.id === msg.author.id && reactions.includes(react.emoji.name);
+  return user.id == msg.author.id && reactions.includes(react.emoji.name);
 };
