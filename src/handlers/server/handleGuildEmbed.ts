@@ -1,8 +1,8 @@
 import { Collection, Message } from 'discord.js';
 import { CommandoMessage } from 'discord.js-commando';
 
-import { MessageOptions, messageOptionsFilter } from '../../functions/collectorFilters';
 import { guildRinSolo } from '../../info/server/guilds';
+import { MessageOptions, messageOptionsFilter } from '../../lib/utils/collectorFilters';
 
 export const handleGuildEmbed = async (message: CommandoMessage) => {
   const query = guildRinSolo;

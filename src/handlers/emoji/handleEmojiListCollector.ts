@@ -1,8 +1,7 @@
 import { Collection, Message } from 'discord.js';
 import { CommandoMessage } from 'discord.js-commando';
-
-import { MessageOptions, messageOptionsFilter } from '../../functions/collectorFilters';
-import { getUserGuilds } from '../../functions/parsers';
+import { MessageOptions, messageOptionsFilter } from '../../lib/utils/collectorFilters';
+import { getUserGuilds } from '../../lib/utils/parsers';
 import { handleEmojiListGuild } from './handleEmojiListGuild';
 
 export const handleEmojiListCollector = async (message: CommandoMessage) => {

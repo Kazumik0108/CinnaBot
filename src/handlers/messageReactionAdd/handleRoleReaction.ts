@@ -1,4 +1,4 @@
-import { Guild, GuildMember, MessageReaction } from 'discord.js';
+import { GuildMember, MessageReaction } from 'discord.js';
 
 import { allReceptionMessages } from '../../info/server/reception';
 

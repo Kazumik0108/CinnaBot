@@ -1,14 +1,11 @@
-import { Message, Role } from 'discord.js';
+import { Role } from 'discord.js';
 import { Command, CommandoClient, CommandoMessage } from 'discord.js-commando';
-
-import { getGuildRole, GetGuildRoleOptions } from '../../functions/guildFilters';
-import { handleRoleDataArgs, roleArgsPrompt, RoleDataArgs } from '../../handlers/roles/handleRoleDataArgs';
-import {
-  handleRoleDataConfirmation,
-  RoleDataConfirmationOptions,
-} from '../../handlers/roles/handleRoleDataConfirmation';
+import { roleArgsPrompt, handleRoleDataArgs } from '../../handlers/roles/handleRoleDataArgs';
+import { handleRoleDataConfirmation } from '../../handlers/roles/handleRoleDataConfirmation';
 import { handleRoleDataEdit } from '../../handlers/roles/handleRoleDataEdit';
-import { getRoleData, handleRoleDataEmbed, RoleDataEmbedInputs } from '../../handlers/roles/handleRoleDataEmbed';
+import { getRoleData, RoleDataEmbedInputs, handleRoleDataEmbed } from '../../handlers/roles/handleRoleDataEmbed';
+import { RoleDataArgs, RoleDataConfirmationOptions } from '../../lib/types/common/interfaces';
+import { getGuildRole } from '../../lib/utils/guildFilters';
 
 interface PromptArgs {
   role: Role;
@@ -32,20 +29,12 @@ export default class addrole extends Command {
           key: 'role',
           prompt: 'Specify the name of the role you want to delete.',
           type: 'string',
-          validate: (name: string, m: Message) => {
-            const options: GetGuildRoleOptions = {
-              message: m,
-              property: name,
-            };
-            const role = getGuildRole(options);
+          validate: (name: string, m: CommandoMessage) => {
+            const role = getGuildRole({ message: m, property: name });
             return role != null ? true : false;
           },
-          parse: (name: string, m: Message) => {
-            const options: GetGuildRoleOptions = {
-              message: m,
-              property: name,
-            };
-            const role = <Role>getGuildRole(options);
+          parse: (name: string, m: CommandoMessage) => {
+            const role = <Role>getGuildRole({ message: m, property: name });
             return role;
           },
           error: 'No roles with this name exist in this server. Try another name.',
@@ -58,7 +47,7 @@ export default class addrole extends Command {
             const match = args.match(/^(?:color|hoist|position|perm add|perm del|default)/);
             return match != null ? true : false;
           },
-          parse: (args: string, m: Message) => handleRoleDataArgs(args, m),
+          parse: (args: string, m: CommandoMessage) => handleRoleDataArgs(args, m),
         },
       ],
     });

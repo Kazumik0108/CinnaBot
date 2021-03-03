@@ -1,17 +1,9 @@
 import { stripIndents } from 'common-tags';
-import { ColorResolvable, Guild, Message, Role } from 'discord.js';
-
-import { hexColorParser } from '../../functions/embedFilters';
+import { Guild, Role } from 'discord.js';
+import { CommandoMessage } from 'discord.js-commando';
+import { RoleDataArgs } from '../../lib/types/common/interfaces';
 import { RolePermissions } from '../../types';
-
-export interface RoleDataArgs {
-  default: boolean;
-  color?: ColorResolvable;
-  hoist?: boolean;
-  position?: number;
-  permAdd?: string[];
-  permDel?: string[];
-}
+import { hexColorParser } from '../server/handleEmbedMessageArgs';
 
 export const rolePermissionsArray = () => {
   const events = Object.keys(RolePermissions);
@@ -47,7 +39,7 @@ export const roleArgsPrompt = () => stripIndents`
   ${rolePermissionsArray()}
   \`\`\``;
 
-export const handleRoleDataArgs = async (contents: string, message: Message) => {
+export const handleRoleDataArgs = async (contents: string, m: CommandoMessage) => {
   const args = contents.split(/,/g).map((s) => s.trim());
   const def = args[0].toLowerCase() == 'default' ? true : false;
   const parsed: RoleDataArgs = {
@@ -79,7 +71,7 @@ export const handleRoleDataArgs = async (contents: string, message: Message) => 
         }
         case 'position': {
           const botRole = <Role>(
-            (<Guild>message.guild).me?.roles.cache.filter((r) => r.permissions.has('MANAGE_ROLES')).first()
+            (<Guild>m.guild).me?.roles.cache.filter((r) => r.permissions.has('MANAGE_ROLES')).first()
           );
           const maxPos = botRole.rawPosition;
           const pos = parseInt(value, 10);

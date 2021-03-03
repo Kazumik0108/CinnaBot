@@ -1,7 +1,6 @@
 import { ColorResolvable, Message, MessageEmbed, Role, RoleData } from 'discord.js';
 import { CommandoMessage } from 'discord.js-commando';
-
-import { convertDecimalToHexColor } from '../../functions/embedFilters';
+import { convertDecimalToHexColor } from '../../lib/utils/embedFilters';
 
 export interface RoleDataEmbedInputs {
   message: Message | CommandoMessage;

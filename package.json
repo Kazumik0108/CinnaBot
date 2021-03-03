@@ -19,6 +19,8 @@
     "discord.js-commando": "^0.12.2",
     "dotenv": "^8.2.0",
     "fs": "0.0.1-security",
+    "is-image-url": "^1.1.8",
+    "is-url": "^1.2.4",
     "mysql": "^2.18.1",
     "path": "^0.12.7",
     "reflect-metadata": "^0.1.10",
@@ -38,6 +40,7 @@
   },
   "devDependencies": {
     "@types/common-tags": "^1.8.0",
+    "@types/is-url": "^1.2.28",
     "@types/mysql": "^2.15.17",
     "@types/node": "^14.14.24",
     "@types/twit": "^2.2.28",

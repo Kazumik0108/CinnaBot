@@ -1,6 +1,6 @@
 import { CommandoMessage } from 'discord.js-commando';
-import { EMOJI_REGEX } from '../../functions/regexFilters';
 import { botReactions } from '../../info/server/botReactions';
+import { EMOJI_REGEX } from '../../lib/types/common/regex';
 
 const checkMessageFormat = async (message: CommandoMessage) => {
   const remainder = message.content.replace(EMOJI_REGEX, '').match(/\S+/g);

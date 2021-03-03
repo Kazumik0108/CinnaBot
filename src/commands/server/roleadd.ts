@@ -1,15 +1,11 @@
-import { Message } from 'discord.js';
 import { Command, CommandoClient, CommandoMessage } from 'discord.js-commando';
-
 import { DEFAULT_ROLE_DATA } from '../../functions/DEFAULT_ROLE';
-import { getGuildRole, GetGuildRoleOptions } from '../../functions/guildFilters';
-import { handleRoleDataArgs, roleArgsPrompt, RoleDataArgs } from '../../handlers/roles/handleRoleDataArgs';
-import {
-  handleRoleDataConfirmation,
-  RoleDataConfirmationOptions,
-} from '../../handlers/roles/handleRoleDataConfirmation';
+import { roleArgsPrompt, handleRoleDataArgs } from '../../handlers/roles/handleRoleDataArgs';
+import { handleRoleDataConfirmation } from '../../handlers/roles/handleRoleDataConfirmation';
 import { handleRoleDataEdit } from '../../handlers/roles/handleRoleDataEdit';
-import { handleRoleDataEmbed, RoleDataEmbedInputs } from '../../handlers/roles/handleRoleDataEmbed';
+import { RoleDataEmbedInputs, handleRoleDataEmbed } from '../../handlers/roles/handleRoleDataEmbed';
+import { RoleDataArgs, RoleDataConfirmationOptions } from '../../lib/types/common/interfaces';
+import { getGuildRole } from '../../lib/utils/guildFilters';
 
 interface PromptArgs {
   name: string;
@@ -33,12 +29,8 @@ export default class roleadd extends Command {
           key: 'name',
           prompt: 'Specify the name of the role you would like to create.',
           type: 'string',
-          validate: (name: string, m: Message) => {
-            const options: GetGuildRoleOptions = {
-              message: m,
-              property: name,
-            };
-            const role = getGuildRole(options);
+          validate: (name: string, m: CommandoMessage) => {
+            const role = getGuildRole({ message: m, property: name });
             return role == null ? true : false;
           },
           error: 'A role with this already exists in this server. Try another name.',
@@ -51,7 +43,7 @@ export default class roleadd extends Command {
             const match = args.match(/^(?:color|hoist|position|perm add|perm del|default)/);
             return match != null ? true : false;
           },
-          parse: (args: string, m: Message) => handleRoleDataArgs(args, m),
+          parse: (args: string, m: CommandoMessage) => handleRoleDataArgs(args, m),
         },
       ],
     });

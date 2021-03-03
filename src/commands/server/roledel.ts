@@ -1,10 +1,9 @@
-import { Message, Role } from 'discord.js';
+import { Role } from 'discord.js';
 import { Command, CommandoClient, CommandoMessage } from 'discord.js-commando';
-
-import { getGuildRole, GetGuildRoleOptions } from '../../functions/guildFilters';
-// eslint-disable-next-line prettier/prettier
-import { handleRoleDataConfirmation, RoleDataConfirmationOptions } from '../../handlers/roles/handleRoleDataConfirmation';
-import { getRoleData, handleRoleDataEmbed, RoleDataEmbedInputs } from '../../handlers/roles/handleRoleDataEmbed';
+import { handleRoleDataConfirmation } from '../../handlers/roles/handleRoleDataConfirmation';
+import { getRoleData, RoleDataEmbedInputs, handleRoleDataEmbed } from '../../handlers/roles/handleRoleDataEmbed';
+import { RoleDataConfirmationOptions } from '../../lib/types/common/interfaces';
+import { getGuildRole } from '../../lib/utils/guildFilters';
 
 interface PromptArgs {
   role: Role;
@@ -27,20 +26,12 @@ export default class addrole extends Command {
           key: 'role',
           prompt: 'Specify the name of the role you want to delete.',
           type: 'string',
-          validate: (name: string, m: Message) => {
-            const options: GetGuildRoleOptions = {
-              message: m,
-              property: name,
-            };
-            const role = getGuildRole(options);
+          validate: (name: string, m: CommandoMessage) => {
+            const role = getGuildRole({ message: m, property: name });
             return role != null ? true : false;
           },
-          parse: (name: string, m: Message) => {
-            const options: GetGuildRoleOptions = {
-              message: m,
-              property: name,
-            };
-            const role = <Role>getGuildRole(options);
+          parse: (name: string, m: CommandoMessage) => {
+            const role = <Role>getGuildRole({ message: m, property: name });
             return role;
           },
           error: 'No roles with this name exist in this server. Try another name.',

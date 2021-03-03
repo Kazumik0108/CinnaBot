@@ -1,14 +1,7 @@
-import { Guild, Message, MessageReaction, Role, User } from 'discord.js';
+import { MessageReaction, User, Guild, Role } from 'discord.js';
 import { CommandoMessage } from 'discord.js-commando';
-
-import { reactionOptionsFilter, ReactionOptionsYesNo } from '../../functions/collectorFilters';
-import { RoleDataEmbedInputs } from './handleRoleDataEmbed';
-
-export interface RoleDataConfirmationOptions {
-  options: RoleDataEmbedInputs;
-  watch: Message | CommandoMessage;
-  type: 'add' | 'update' | 'delete';
-}
+import { RoleDataConfirmationOptions } from '../../lib/types/common/interfaces';
+import { ReactionOptionsYesNo, reactionOptionsFilter } from '../../lib/utils/collectorFilters';
 
 export const handleRoleDataConfirmation = async (message: CommandoMessage, confirm: RoleDataConfirmationOptions) => {
   const options: ReactionOptionsYesNo = {

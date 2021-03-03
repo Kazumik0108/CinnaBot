@@ -1,8 +1,9 @@
 import { MessageReaction, User } from 'discord.js';
 import { CommandoMessage } from 'discord.js-commando';
 import { Connection } from 'typeorm';
+
 import { ReactionRole } from '../../entity/ReactionRole';
-import { ReactionOptionsYesNo, reactionOptionsFilter } from '../../functions/collectorFilters';
+import { ReactionOptionsYesNo, reactionOptionsFilter } from '../../lib/utils/collectorFilters';
 import { handleReactionEdit } from './handleReactionEdit';
 
 export const handleReactionRoleEdit = async (rrole: ReactionRole, conn: Connection, message: CommandoMessage) => {

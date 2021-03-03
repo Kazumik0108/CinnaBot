@@ -1,9 +1,9 @@
 import { Message, Role } from 'discord.js';
 import { Command, CommandoClient, CommandoMessage } from 'discord.js-commando';
-import { GetGuildRoleOptions, getGuildRole } from '../../functions/guildFilters';
 import { handleConnection } from '../../handlers/database/handleConnection';
 import { handleReactionRoleEdit } from '../../handlers/database/handleReactionRoleEdit';
 import { handleReactionRoleQuery } from '../../handlers/database/handleReactionRoleQuery';
+import { getGuildRole } from '../../lib/utils/guildFilters';
 
 interface PromptArgs {
   role: Role;
@@ -24,19 +24,11 @@ export default class reactionRoleUpdate extends Command {
           prompt: 'Specify the name of the reaction role to edit.',
           type: 'string',
           validate: (name: string, m: Message) => {
-            const options: GetGuildRoleOptions = {
-              message: m,
-              property: name,
-            };
-            const role = getGuildRole(options);
+            const role = getGuildRole({ message: m, property: name });
             return role != null ? true : false;
           },
           parse: (name: string, m: Message) => {
-            const options: GetGuildRoleOptions = {
-              message: m,
-              property: name,
-            };
-            const role = <Role>getGuildRole(options);
+            const role = getGuildRole({ message: m, property: name });
             return role;
           },
           error: 'No roles with this name exist in this server. Try another name.',

@@ -1,8 +1,7 @@
 import { ClientUser, Collection, Guild, PermissionResolvable, TextChannel } from 'discord.js';
 import { CommandoGuild, CommandoMessage } from 'discord.js-commando';
-
-import { getUserGuilds, searchEmojiName } from '../../functions/parsers';
-import { EMOJI_REPLACE_REGEX } from '../../functions/regexFilters';
+import { searchEmojiName, getUserGuilds } from '../../lib/utils/parsers';
+import { EMOJI_REPLACE_REGEX } from '../../lib/utils/regexFilters';
 
 const checkMessageFormat = async (message: CommandoMessage) => {
   const colons = message.content.match(/:/g) ?? [];
