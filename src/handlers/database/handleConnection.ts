@@ -6,7 +6,7 @@ config({ path: join(__dirname, '../process.env') });
 
 let connectionReadyPromise: Promise<void> | null = null;
 
-export const prepareConnection = async () => {
+const prepareConnection = async () => {
   if (!connectionReadyPromise) {
     connectionReadyPromise = (async () => {
       try {
@@ -19,4 +19,9 @@ export const prepareConnection = async () => {
     })();
   }
   return connectionReadyPromise;
+};
+
+export const handleConnection = async () => {
+  await prepareConnection();
+  return getConnection();
 };
