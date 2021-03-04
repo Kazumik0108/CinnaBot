@@ -1,7 +1,7 @@
 import { stripIndents } from 'common-tags';
 import { Guild, GuildEmoji, GuildMember } from 'discord.js';
 import { Command, CommandoClient, CommandoMessage } from 'discord.js-commando';
-import { ClientEvents } from '../../types';
+import { ClientEvents } from '../../lib/common/enums';
 
 interface promptArgs {
   event: string;

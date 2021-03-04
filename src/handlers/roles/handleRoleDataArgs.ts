@@ -1,9 +1,9 @@
 import { stripIndents } from 'common-tags';
 import { Guild, Role } from 'discord.js';
 import { CommandoMessage } from 'discord.js-commando';
-import { RoleDataArgs } from '../../lib/types/common/interfaces';
-import { RolePermissions } from '../../types';
-import { hexColorParser } from '../server/handleEmbedMessageArgs';
+import { RolePermissions } from '../../lib/common/enums';
+import { RoleDataArgs } from '../../lib/common/interfaces';
+import { hexColorParser } from '../../lib/utils/color/parseHexColor';
 
 export const rolePermissionsArray = () => {
   const events = Object.keys(RolePermissions);

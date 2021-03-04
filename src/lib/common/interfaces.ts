@@ -16,11 +16,6 @@ export interface RoleDataConfirmationOptions {
   type: 'add' | 'update' | 'delete';
 }
 
-export interface GetGuildRoleOptions {
-  property: string;
-  message: Message | CommandoMessage;
-}
-
 export interface MessageFilterOptions {
   args: string[];
   message: Message | CommandoMessage;
@@ -48,4 +43,9 @@ export interface ReactionFilterAny {
 
 export interface ReactionFilterOptions extends ReactionFilterAny {
   options: ReactionOptionsBackNext | ReactionOptionsYesNo;
+}
+
+export interface ColorConvertOptions {
+  input: string;
+  option: 'decToHex' | 'hexToDec';
 }

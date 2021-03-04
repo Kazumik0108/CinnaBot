@@ -2,8 +2,8 @@ import { GuildEmoji, Message } from 'discord.js';
 import { CommandoMessage } from 'discord.js-commando';
 import { Connection } from 'typeorm';
 import { ReactionRole } from '../../entity/ReactionRole';
-import { messageEmojiFilter } from '../../functions/collectorFilters';
-import { EMOJI_REGEX, ID_EMOJI_REGEX } from '../../functions/regexFilters';
+import { EMOJI, EMOJI_ID } from '../../lib/common/regex';
+import { messageEmojiFilter } from '../../lib/utils/collector/filterMessage';
 import { handleReactionQuery } from './handleReactionQuery';
 
 export const handleReactionEdit = async (rrole: ReactionRole, conn: Connection, message: CommandoMessage) => {
@@ -17,14 +17,14 @@ export const handleReactionEdit = async (rrole: ReactionRole, conn: Connection, 
           `The role @${rrole.name} does not have a designated emoji. Reply to this message with an emoji to use for the reaction role.`,
         );
 
-  const filter = (m: Message) => messageEmojiFilter(m, message);
+  const filter = (m: Message) => messageEmojiFilter(m);
   const collector = message.channel.createMessageCollector(filter, { time: 15 * 1000 });
 
   collector.on('collect', async (m: Message) => {
-    const emojis = <RegExpMatchArray>m.content.match(EMOJI_REGEX);
+    const emojis = <RegExpMatchArray>m.content.match(EMOJI);
     let react: GuildEmoji | undefined = undefined;
     for (const emoji of emojis) {
-      const id = emoji.match(ID_EMOJI_REGEX);
+      const id = emoji.match(EMOJI_ID);
       if (id == null) continue;
       react = message.client.emojis.cache.get(id[0]);
       if (react != undefined) break;

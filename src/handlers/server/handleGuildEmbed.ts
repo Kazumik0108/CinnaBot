@@ -2,7 +2,7 @@ import { Collection, Message } from 'discord.js';
 import { CommandoMessage } from 'discord.js-commando';
 
 import { guildRinSolo } from '../../info/server/guilds';
-import { MessageOptions, messageOptionsFilter } from '../../lib/utils/collectorFilters';
+import { messageOptionsFilter } from '../../lib/utils/collector/filterMessage';
 
 export const handleGuildEmbed = async (message: CommandoMessage) => {
   const query = guildRinSolo;
@@ -20,10 +20,7 @@ export const handleGuildEmbed = async (message: CommandoMessage) => {
   const prompt = `Select a pre-formatted embed message below from ${guild.name} or \`cancel\` to abort this command. This message will automatically time out after 10 seconds.\`\`\`${names}\`\`\``;
   (await message.say(prompt)).delete({ timeout: 10 * 1000 });
 
-  const options: MessageOptions = {
-    args: names,
-  };
-  const filter = (msg: Message) => messageOptionsFilter(options, msg);
+  const filter = (msg: Message) => messageOptionsFilter({ args: names, message: msg });
   const collector = message.channel.createMessageCollector(filter, { time: 30 * 1000 });
 
   collector.on('collect', async (collect: Message) => {

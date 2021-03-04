@@ -2,9 +2,10 @@ import { GuildChannel } from 'discord.js';
 import { Command, CommandoClient, CommandoMessage } from 'discord.js-commando';
 
 import isUrl from 'is-url';
-import { EmbedMessageFieldsPrompt, hexColorParser } from '../../handlers/server/handleEmbedMessageArgs';
-import { ID_CHANNEL_REGEX } from '../../lib/types/common/regex';
-import { getGuildChannel } from '../../lib/utils/guildFilters';
+import { EmbedMessageFieldsPrompt } from '../../handlers/server/handleEmbedMessageArgs';
+import { CHANNEL_ID } from '../../lib/common/regex';
+import { hexColorParser } from '../../lib/utils/color/parseHexColor';
+import { getGuildChannel } from '../../lib/utils/guild/getGuildChannel';
 
 // interface PromptArgs {
 //   channel: GuildChannel;
@@ -27,14 +28,14 @@ export default class makeEmbed extends Command {
           prompt: 'Mention the target channel for the embed message.',
           type: 'string',
           validate: (mention: string, m: CommandoMessage) => {
-            const match = mention.match(ID_CHANNEL_REGEX);
+            const match = mention.match(CHANNEL_ID);
             if (match == null) return false;
             const id = match[0];
             const channel = getGuildChannel(id, m);
             return channel != null ? true : false;
           },
           parse: (mention: string, m: CommandoMessage) => {
-            const match = <RegExpMatchArray>mention.match(ID_CHANNEL_REGEX);
+            const match = <RegExpMatchArray>mention.match(CHANNEL_ID);
             const id = match[0];
             const channel = <GuildChannel>getGuildChannel(id, m);
             return channel;

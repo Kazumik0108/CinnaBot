@@ -1,11 +1,11 @@
 import { Command, CommandoClient, CommandoMessage } from 'discord.js-commando';
-import { DEFAULT_ROLE_DATA } from '../../functions/DEFAULT_ROLE';
 import { roleArgsPrompt, handleRoleDataArgs } from '../../handlers/roles/handleRoleDataArgs';
 import { handleRoleDataConfirmation } from '../../handlers/roles/handleRoleDataConfirmation';
 import { handleRoleDataEdit } from '../../handlers/roles/handleRoleDataEdit';
 import { RoleDataEmbedInputs, handleRoleDataEmbed } from '../../handlers/roles/handleRoleDataEmbed';
-import { RoleDataArgs, RoleDataConfirmationOptions } from '../../lib/types/common/interfaces';
-import { getGuildRole } from '../../lib/utils/guildFilters';
+import { RoleDataArgs, RoleDataConfirmationOptions } from '../../lib/common/interfaces';
+import { defaultRole } from '../../lib/models/defaultRole';
+import { getGuildRole } from '../../lib/utils/guild/getGuildRole';
 
 interface PromptArgs {
   name: string;
@@ -30,7 +30,7 @@ export default class roleadd extends Command {
           prompt: 'Specify the name of the role you would like to create.',
           type: 'string',
           validate: (name: string, m: CommandoMessage) => {
-            const role = getGuildRole({ message: m, property: name });
+            const role = getGuildRole(name, m);
             return role == null ? true : false;
           },
           error: 'A role with this already exists in this server. Try another name.',
@@ -50,7 +50,7 @@ export default class roleadd extends Command {
   }
 
   async run(message: CommandoMessage, { name, args }: PromptArgs) {
-    let data = DEFAULT_ROLE_DATA(name);
+    let data = defaultRole(name);
     data = args.default == true ? data : handleRoleDataEdit(data, args);
     const options: RoleDataEmbedInputs = {
       message: message,

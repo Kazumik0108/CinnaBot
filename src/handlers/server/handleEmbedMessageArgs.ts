@@ -1,6 +1,4 @@
 import { stripIndents } from 'common-tags';
-import { HEX_REGEX } from '../../lib/types/common/regex';
-import { HEX_SHORT_TO_LONG_REGEX } from '../../lib/utils/regexFilters';
 
 export const EmbedMessageFieldsPrompt = () => stripIndents`
   Specify the fields of the embed message, or \`next\` to use none. Field values may span multiple lines. Use the key phrases below to separate field arguments and different fields. Omitting the argument \`inline\` will default it to \`FALSE\`.
@@ -26,24 +24,6 @@ export const EmbedMessageFieldsPrompt = () => stripIndents`
 //   const matches = color.match(HEX_REGEX);
 //   return matches != null ? true : false;
 // };
-
-export const hexColorParser = (color: string): string | null => {
-  const matches = color.match(HEX_REGEX);
-  if (matches == null) return null;
-
-  const colorInput = matches[0];
-  if (colorInput.length == 7) return colorInput;
-
-  return convertShortToLongHexColor(colorInput);
-};
-
-const replaceShortToLongHexColor = (substring: string): string => {
-  return substring.concat(substring);
-};
-
-export const convertShortToLongHexColor = (colorShort: string): string => {
-  return colorShort.replace(HEX_SHORT_TO_LONG_REGEX, replaceShortToLongHexColor);
-};
 
 // export const convertDecimalToHexColor = (decimal: number) => {
 //   let hex = decimal.toString(16).toUpperCase();

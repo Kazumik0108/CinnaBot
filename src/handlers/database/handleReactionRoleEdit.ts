@@ -1,9 +1,9 @@
 import { MessageReaction, User } from 'discord.js';
 import { CommandoMessage } from 'discord.js-commando';
 import { Connection } from 'typeorm';
-
 import { ReactionRole } from '../../entity/ReactionRole';
-import { ReactionOptionsYesNo, reactionOptionsFilter } from '../../lib/utils/collectorFilters';
+import { ReactionOptionsYesNo } from '../../lib/common/interfaces';
+import { reactionOptionsFilter } from '../../lib/utils/collector/filterReaction';
 import { handleReactionEdit } from './handleReactionEdit';
 
 export const handleReactionRoleEdit = async (rrole: ReactionRole, conn: Connection, message: CommandoMessage) => {
@@ -21,7 +21,8 @@ export const handleReactionRoleEdit = async (rrole: ReactionRole, conn: Connecti
     await prompt.react(option);
   }
 
-  const filter = (react: MessageReaction, user: User) => reactionOptionsFilter(message, options, react, user);
+  const filter = (react: MessageReaction, user: User) =>
+    reactionOptionsFilter({ message: message, reaction: react, user: user, options: options });
   const collector = prompt.createReactionCollector(filter, { time: 15 * 1000 });
 
   collector.on('collect', async (react: MessageReaction) => {

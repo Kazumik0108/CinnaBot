@@ -1,6 +1,6 @@
 import { ColorResolvable, Message, MessageEmbed, Role, RoleData } from 'discord.js';
 import { CommandoMessage } from 'discord.js-commando';
-import { convertDecimalToHexColor } from '../../lib/utils/embedFilters';
+import { convertColor } from '../../lib/utils/color/convertColor';
 
 export interface RoleDataEmbedInputs {
   message: Message | CommandoMessage;
@@ -34,7 +34,7 @@ export const handleRoleDataEmbed = (options: RoleDataEmbedInputs) => {
   const isHoisted = (<boolean>data.hoist).toString().toUpperCase();
 
   const position = data.position;
-  const colorHex = convertDecimalToHexColor(<number>data.color);
+  const colorHex = convertColor({ input: String(data.color), option: 'decToHex' });
   const description = role != undefined ? role.toString() : data.name;
 
   const embed = new MessageEmbed()

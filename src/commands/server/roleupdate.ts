@@ -4,8 +4,8 @@ import { roleArgsPrompt, handleRoleDataArgs } from '../../handlers/roles/handleR
 import { handleRoleDataConfirmation } from '../../handlers/roles/handleRoleDataConfirmation';
 import { handleRoleDataEdit } from '../../handlers/roles/handleRoleDataEdit';
 import { getRoleData, RoleDataEmbedInputs, handleRoleDataEmbed } from '../../handlers/roles/handleRoleDataEmbed';
-import { RoleDataArgs, RoleDataConfirmationOptions } from '../../lib/types/common/interfaces';
-import { getGuildRole } from '../../lib/utils/guildFilters';
+import { RoleDataArgs, RoleDataConfirmationOptions } from '../../lib/common/interfaces';
+import { getGuildRole } from '../../lib/utils/guild/getGuildRole';
 
 interface PromptArgs {
   role: Role;
@@ -30,11 +30,11 @@ export default class addrole extends Command {
           prompt: 'Specify the name of the role you want to delete.',
           type: 'string',
           validate: (name: string, m: CommandoMessage) => {
-            const role = getGuildRole({ message: m, property: name });
+            const role = getGuildRole(name, m);
             return role != null ? true : false;
           },
           parse: (name: string, m: CommandoMessage) => {
-            const role = <Role>getGuildRole({ message: m, property: name });
+            const role = <Role>getGuildRole(name, m);
             return role;
           },
           error: 'No roles with this name exist in this server. Try another name.',

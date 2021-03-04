@@ -1,7 +1,8 @@
 import { ClientUser, Collection, Guild, PermissionResolvable, TextChannel } from 'discord.js';
 import { CommandoGuild, CommandoMessage } from 'discord.js-commando';
-import { searchEmojiName, getUserGuilds } from '../../lib/utils/parsers';
-import { EMOJI_REPLACE_REGEX } from '../../lib/utils/regexFilters';
+import { EMOJI_REPLACE } from '../../lib/common/regex';
+import { getEmoji } from '../../lib/utils/emoji/getEmoji';
+import { getUserGuilds } from '../../lib/utils/user/getUserGuilds';
 
 const checkMessageFormat = async (message: CommandoMessage) => {
   const colons = message.content.match(/:/g) ?? [];
@@ -66,19 +67,19 @@ export const handleNonNitroEmoji = async (message: CommandoMessage) => {
   const validPerms = (await checkClientPerms(message)) && (await checkEveryonePerms(message));
   if (!validPerms) return null;
 
-  const content = message.content.replace(EMOJI_REPLACE_REGEX, (substring: string, match: string) => {
+  const content = message.content.replace(EMOJI_REPLACE, (substring: string, match: string) => {
     if (match == undefined) return substring;
 
     let guilds: CommandoGuild | Guild | Collection<string, Guild> = message.guild;
-    let emoteMatch = searchEmojiName(guilds, match);
+    let emoteMatch = getEmoji(match, guilds);
     if (emoteMatch != undefined) return emoteMatch.toString();
 
     guilds = getUserGuilds(message);
-    emoteMatch = searchEmojiName(guilds, match);
+    emoteMatch = getEmoji(match, guilds);
     if (emoteMatch != undefined) return emoteMatch.toString();
 
     guilds = message.client.guilds.cache;
-    emoteMatch = searchEmojiName(guilds, match);
+    emoteMatch = getEmoji(match, guilds);
     if (emoteMatch != undefined) return emoteMatch.toString();
 
     return substring;
