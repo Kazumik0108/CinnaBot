@@ -1,7 +1,6 @@
 import { MessageReaction, User } from 'discord.js';
 import { CommandoClient } from 'discord.js-commando';
-
-import { handleReactionRole } from '../handlers/messageReactionAdd/handleRoleReaction';
+import { handleReactionRole } from '../../handlers/messageReactionAdd/handleRoleReaction';
 
 export default async (client: CommandoClient, partial: MessageReaction, user: User) => {
   if (user.bot) return;
@@ -17,5 +16,5 @@ export default async (client: CommandoClient, partial: MessageReaction, user: Us
   const guildMember = guild.member(user);
   if (guildMember == null) return;
 
-  handleReactionRole(reaction, guildMember);
+  await handleReactionRole(reaction, guildMember);
 };

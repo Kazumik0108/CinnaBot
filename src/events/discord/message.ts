@@ -1,8 +1,7 @@
 import { CommandoClient, CommandoMessage } from 'discord.js-commando';
-
-import { handleBotReactions } from '../handlers/message/handleBotReactions';
-import { handleNonNitroEmoji } from '../handlers/message/handleNonNitroEmoji';
-import { handleSpamEmojiChannels, sendDeleteLog } from '../handlers/message/handleSpamEmojiChannels';
+import { handleBotReactions } from '../../handlers/message/handleBotReactions';
+import { handleNonNitroEmoji } from '../../handlers/message/handleNonNitroEmoji';
+import { handleSpamEmojiChannels, sendDeleteLog } from '../../handlers/message/handleSpamEmojiChannels';
 
 export default async (client: CommandoClient, message: CommandoMessage) => {
   await handleBotReactions(message);

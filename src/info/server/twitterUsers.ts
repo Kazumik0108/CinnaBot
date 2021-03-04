@@ -1,4 +1,4 @@
-interface TwitterUser {
+export interface TwitterUser {
   id: string;
   handle?: string;
   channels: string[];
