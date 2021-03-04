@@ -3,21 +3,23 @@ import { Command, CommandoClient, CommandoMessage } from 'discord.js-commando';
 import { roleArgsPrompt, handleRoleDataArgs } from '../../handlers/roles/handleRoleDataArgs';
 import { handleRoleDataConfirmation } from '../../handlers/roles/handleRoleDataConfirmation';
 import { handleRoleDataEdit } from '../../handlers/roles/handleRoleDataEdit';
-import { getRoleData, RoleDataEmbedInputs, handleRoleDataEmbed } from '../../handlers/roles/handleRoleDataEmbed';
-import { RoleDataArgs, RoleDataConfirmationOptions } from '../../lib/common/interfaces';
+import { handleRoleDataEmbed } from '../../handlers/roles/handleRoleDataEmbed';
+import { RoleDataArgs, RoleDataEmbedInputs } from '../../lib/common/interfaces';
 import { getGuildRole } from '../../lib/utils/guild/getGuildRole';
+import { getRoleData } from '../../lib/utils/role/getRoleData';
 
 interface PromptArgs {
   role: Role;
   args: RoleDataArgs;
 }
 
-export default class addrole extends Command {
+export default class RoleEdit extends Command {
   constructor(client: CommandoClient) {
     super(client, {
-      name: 'roleupdate',
+      name: 'roleedit',
+      aliases: ['redit'],
       group: 'server',
-      memberName: 'roleupdate',
+      memberName: 'roleedit',
       description: 'Updates a specific role in the server.',
       guildOnly: true,
       clientPermissions: ['MANAGE_ROLES'],
@@ -41,7 +43,7 @@ export default class addrole extends Command {
         },
         {
           key: 'args',
-          prompt: roleArgsPrompt(),
+          prompt: roleArgsPrompt.update,
           type: 'string',
           validate: (args: string) => {
             const match = args.match(/^(?:color|hoist|position|perm add|perm del|default)/);
@@ -55,6 +57,7 @@ export default class addrole extends Command {
 
   async run(message: CommandoMessage, { role, args }: PromptArgs) {
     let data = getRoleData(role);
+    // console.log(args);
     data = handleRoleDataEdit(data, args);
     const options: RoleDataEmbedInputs = {
       message: message,
@@ -65,12 +68,7 @@ export default class addrole extends Command {
     const embed = handleRoleDataEmbed(options);
     const reply = await message.reply('Confirm with a reaction to update the role or abort the command.', embed);
 
-    const confirm: RoleDataConfirmationOptions = {
-      options: options,
-      watch: reply,
-      type: 'update',
-    };
-    await handleRoleDataConfirmation(message, confirm);
+    await handleRoleDataConfirmation({ message: message, options: options, target: reply, type: 'update' });
     return null;
   }
 }

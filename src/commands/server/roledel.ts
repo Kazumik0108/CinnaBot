@@ -1,18 +1,20 @@
 import { Role } from 'discord.js';
 import { Command, CommandoClient, CommandoMessage } from 'discord.js-commando';
 import { handleRoleDataConfirmation } from '../../handlers/roles/handleRoleDataConfirmation';
-import { getRoleData, RoleDataEmbedInputs, handleRoleDataEmbed } from '../../handlers/roles/handleRoleDataEmbed';
-import { RoleDataConfirmationOptions } from '../../lib/common/interfaces';
+import { handleRoleDataEmbed } from '../../handlers/roles/handleRoleDataEmbed';
+import { RoleDataEmbedInputs } from '../../lib/common/interfaces';
 import { getGuildRole } from '../../lib/utils/guild/getGuildRole';
+import { getRoleData } from '../../lib/utils/role/getRoleData';
 
 interface PromptArgs {
   role: Role;
 }
 
-export default class addrole extends Command {
+export default class RoleDel extends Command {
   constructor(client: CommandoClient) {
     super(client, {
       name: 'roledel',
+      aliases: ['rdel'],
       group: 'server',
       memberName: 'roledel',
       description: 'Deletes the specified role from the server.',
@@ -51,12 +53,7 @@ export default class addrole extends Command {
     const embed = handleRoleDataEmbed(options);
     const reply = await message.reply('Confirm with a reaction to delete the role or abort the command.', embed);
 
-    const confirm: RoleDataConfirmationOptions = {
-      options: options,
-      watch: reply,
-      type: 'delete',
-    };
-    await handleRoleDataConfirmation(message, confirm);
+    await handleRoleDataConfirmation({ message: message, options: options, target: reply, type: 'delete' });
     return null;
   }
 }

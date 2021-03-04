@@ -1,4 +1,4 @@
-import { HEX_COLOR, HEX_DIGIT } from '../../types/common/regex';
+import { HEX_DIGIT, HEX_COLOR } from '../../common/regex';
 
 const replaceHexShortLong = (substring: string): string => {
   return substring.concat(substring);

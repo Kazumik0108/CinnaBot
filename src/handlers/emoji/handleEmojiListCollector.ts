@@ -11,7 +11,7 @@ export const handleEmojiListCollector = async (message: CommandoMessage) => {
 
   (await message.reply(prompt)).delete({ timeout: 30 * 1000 });
 
-  const indices = 1;
+  const indices = [...Array(userGuilds.length).keys()].map((i) => String(i));
   const filter = (msg: Message) => messageOptionsFilter({ args: indices, message: msg });
   const collector = message.channel.createMessageCollector(filter, { time: 30 * 1000 });
 

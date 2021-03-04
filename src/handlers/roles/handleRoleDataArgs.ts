@@ -5,7 +5,7 @@ import { RolePermissions } from '../../lib/common/enums';
 import { RoleDataArgs } from '../../lib/common/interfaces';
 import { hexColorParser } from '../../lib/utils/color/parseHexColor';
 
-export const rolePermissionsArray = () => {
+const rolePermissionsArray = () => {
   const events = Object.keys(RolePermissions);
   const columnOne = events.slice(0, Math.ceil(events.length / 2));
   const columnTwo = events.slice(Math.ceil(events.length / 2), events.length);
@@ -21,11 +21,8 @@ export const rolePermissionsArray = () => {
   return table.join('\n');
 };
 
-export const roleArgsPrompt = () => stripIndents`
-  Specify any other options for the role using the key phrases below, or \`default\` to use the default role settings. Separate arguments with commas.
-  
-  Entered permissions will be added to or deleted from default role permissions. The list of permissions are shown below.
-  \`\`\`
+const roleArgsOptions = stripIndents`
+\`\`\`
   color <hex color>
   hoist <true/false>
   position <number>
@@ -38,6 +35,22 @@ export const roleArgsPrompt = () => stripIndents`
   ---PERMISSIONS---
   ${rolePermissionsArray()}
   \`\`\``;
+
+// eslint-disable-next-line no-shadow
+export const roleArgsPrompt = {
+  add: stripIndents`
+  Specify any options to use for the role with the key phrases below, or \`default\` to use the default role settings. Separate arguments with commas.
+  
+  Entered permissions will be added to or deleted from default role permissions.
+  ${roleArgsOptions}
+  `,
+  update: stripIndents`
+  Specify any options to change in the role with the key phrases below. Separate arguments with commas.
+  
+  Entered permissions will be added to or deleted from current role permissions.
+  ${roleArgsOptions}
+  `,
+};
 
 export const handleRoleDataArgs = async (contents: string, m: CommandoMessage) => {
   const args = contents.split(/,/g).map((s) => s.trim());
@@ -63,8 +76,8 @@ export const handleRoleDataArgs = async (contents: string, m: CommandoMessage) =
           break;
         }
         case 'hoist': {
-          const hoist = ['true', 'false'].includes(value.toLowerCase());
-          if (hoist) {
+          if (['true', 'false'].includes(value.toLowerCase())) {
+            const hoist = value.toLowerCase() == 'true' ? true : false;
             parsed.hoist = hoist;
           }
           break;
@@ -90,7 +103,7 @@ export const handleRoleDataArgs = async (contents: string, m: CommandoMessage) =
 
       const perms = [];
       for (const perm of permInputs) {
-        if (perm in RolePermissions) perms.push(perm.toUpperCase());
+        if (perm.toUpperCase() in RolePermissions) perms.push(perm.toUpperCase());
       }
 
       if (key == 'perm add') {

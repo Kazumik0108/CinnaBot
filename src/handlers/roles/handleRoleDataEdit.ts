@@ -6,7 +6,7 @@ export const handleRoleDataEdit = (data: RoleData, args: RoleDataArgs) => {
   if (args.color) {
     dataEdit.color = args.color;
   }
-  if (args.hoist) {
+  if (args.hoist != undefined) {
     dataEdit.hoist = args.hoist;
   }
   if (args.position) {

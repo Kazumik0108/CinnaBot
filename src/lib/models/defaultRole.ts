@@ -1,9 +1,9 @@
-import { ColorResolvable, PermissionResolvable, RoleData } from 'discord.js';
+import { PermissionResolvable, RoleData } from 'discord.js';
 
 export const defaultRole = (name: string) => {
   const data: RoleData = {
     name: name,
-    color: <ColorResolvable>0,
+    color: '#000000',
     hoist: false,
     position: 1,
     mentionable: false,

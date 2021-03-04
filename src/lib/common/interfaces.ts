@@ -1,5 +1,4 @@
-import { ColorResolvable, Message, MessageReaction, User } from 'discord.js';
-import { CommandoMessage } from 'discord.js-commando';
+import { ColorResolvable, EmojiIdentifierResolvable, Message, MessageReaction, Role, RoleData, User } from 'discord.js';
 
 export interface RoleDataArgs {
   default: boolean;
@@ -10,33 +9,40 @@ export interface RoleDataArgs {
   permDel?: string[];
 }
 
+export interface RoleDataEmbedInputs {
+  message: Message;
+  roleData: RoleData;
+  role?: Role;
+}
+
 export interface RoleDataConfirmationOptions {
+  message: Message;
   options: RoleDataEmbedInputs;
-  watch: Message | CommandoMessage;
+  target: Message;
   type: 'add' | 'update' | 'delete';
 }
 
 export interface MessageFilterOptions {
   args: string[];
-  message: Message | CommandoMessage;
+  message: Message;
 }
 
 export interface ReactionOptionsYesNo {
-  yes: string;
-  no: string;
-  edit?: string;
-  help?: string;
+  yes: EmojiIdentifierResolvable;
+  no: EmojiIdentifierResolvable;
+  edit?: EmojiIdentifierResolvable;
+  help?: EmojiIdentifierResolvable;
 }
 
 export interface ReactionOptionsBackNext {
-  first?: string;
-  back: string;
-  next: string;
-  last?: string;
+  first?: EmojiIdentifierResolvable;
+  back: EmojiIdentifierResolvable;
+  next: EmojiIdentifierResolvable;
+  last?: EmojiIdentifierResolvable;
 }
 
 export interface ReactionFilterAny {
-  message: Message | CommandoMessage;
+  message: Message;
   reaction: MessageReaction;
   user: User;
 }

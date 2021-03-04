@@ -25,7 +25,8 @@ export default class serverEmoteList extends Command {
       args: [
         {
           key: 'index',
-          prompt: 'Specify `0` to send the emote list of this server. Otherwise, specify `1`.',
+          prompt:
+            'Specify `0` to send the emote list of this server, or specify `1` to choose from a list of available servers.',
           type: 'string',
           validate: (value: string) => {
             return ['0', '1'].includes(value) ? true : false;

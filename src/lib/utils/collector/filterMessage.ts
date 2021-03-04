@@ -1,6 +1,6 @@
 import { Message } from 'discord.js';
-import { MessageFilterOptions } from '../../types/common/interfaces';
-import { EMOJI } from '../../types/common/regex';
+import { MessageFilterOptions } from '../../common/interfaces';
+import { EMOJI } from '../../common/regex';
 
 export const messageEmojiFilter = (msg: Message) => {
   const emoji = msg.content.match(EMOJI);

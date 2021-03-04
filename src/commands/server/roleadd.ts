@@ -2,8 +2,8 @@ import { Command, CommandoClient, CommandoMessage } from 'discord.js-commando';
 import { roleArgsPrompt, handleRoleDataArgs } from '../../handlers/roles/handleRoleDataArgs';
 import { handleRoleDataConfirmation } from '../../handlers/roles/handleRoleDataConfirmation';
 import { handleRoleDataEdit } from '../../handlers/roles/handleRoleDataEdit';
-import { RoleDataEmbedInputs, handleRoleDataEmbed } from '../../handlers/roles/handleRoleDataEmbed';
-import { RoleDataArgs, RoleDataConfirmationOptions } from '../../lib/common/interfaces';
+import { handleRoleDataEmbed } from '../../handlers/roles/handleRoleDataEmbed';
+import { RoleDataArgs, RoleDataEmbedInputs } from '../../lib/common/interfaces';
 import { defaultRole } from '../../lib/models/defaultRole';
 import { getGuildRole } from '../../lib/utils/guild/getGuildRole';
 
@@ -12,10 +12,11 @@ interface PromptArgs {
   args: RoleDataArgs;
 }
 
-export default class roleadd extends Command {
+export default class RoleAdd extends Command {
   constructor(client: CommandoClient) {
     super(client, {
       name: 'roleadd',
+      aliases: ['radd'],
       group: 'server',
       memberName: 'roleadd',
       description: 'Creates a named role within the server.',
@@ -37,7 +38,7 @@ export default class roleadd extends Command {
         },
         {
           key: 'args',
-          prompt: roleArgsPrompt(),
+          prompt: roleArgsPrompt.add,
           type: 'string',
           validate: (args: string) => {
             const match = args.match(/^(?:color|hoist|position|perm add|perm del|default)/);
@@ -60,12 +61,7 @@ export default class roleadd extends Command {
     const embed = handleRoleDataEmbed(options);
     const reply = await message.reply('Confirm with a reaction to create the role or abort the command.', embed);
 
-    const confirm: RoleDataConfirmationOptions = {
-      options: options,
-      watch: reply,
-      type: 'add',
-    };
-    await handleRoleDataConfirmation(message, confirm);
+    await handleRoleDataConfirmation({ message: message, options: options, target: reply, type: 'add' });
     return null;
   }
 }

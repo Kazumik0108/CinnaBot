@@ -1,42 +1,42 @@
 import { MessageReaction, User, Guild, Role } from 'discord.js';
-import { CommandoMessage } from 'discord.js-commando';
 import { ReactionOptionsYesNo, RoleDataConfirmationOptions } from '../../lib/common/interfaces';
 import { reactionOptionsFilter } from '../../lib/utils/collector/filterReaction';
 
-export const handleRoleDataConfirmation = async (message: CommandoMessage, confirm: RoleDataConfirmationOptions) => {
-  const options: ReactionOptionsYesNo = {
+export const handleRoleDataConfirmation = async ({ message, options, target, type }: RoleDataConfirmationOptions) => {
+  const filterOptions: ReactionOptionsYesNo = {
     yes: '👍',
     no: '👎',
   };
-  for (const option of Object.values(options) as string[]) {
-    await confirm.watch.react(option);
+
+  for (const option of Object.values(filterOptions) as string[]) {
+    await target.react(option);
   }
 
   const filter = (react: MessageReaction, user: User) =>
-    reactionOptionsFilter({ message: message, user: user, reaction: react, options: options });
-  const collector = confirm.watch.createReactionCollector(filter, { time: 15 * 1000 });
+    reactionOptionsFilter({ message: message, user: user, reaction: react, options: filterOptions });
+  const collector = target.createReactionCollector(filter, { time: 15 * 1000 });
 
   collector.on('collect', async (react: MessageReaction) => {
     const guild = <Guild>message.guild;
-    if (react.emoji.name == options.yes) {
-      switch (confirm.type) {
+    if (react.emoji.name == filterOptions.yes) {
+      switch (type) {
         case 'add': {
           const role = await guild.roles
-            .create({ data: confirm.options.roleData })
+            .create({ data: options.roleData })
             .catch((e) => console.log('Failed to create a role: ', e));
-          (await message.say(`Successfully created the role ${role}.`)).delete({ timeout: 5 * 1000 });
+          (await message.reply(`Successfully created the role ${role}.`)).delete({ timeout: 5 * 1000 });
           break;
         }
         case 'delete': {
-          const role = <Role>guild.roles.cache.find((r) => r.name == confirm.options.roleData.name);
+          const role = <Role>guild.roles.cache.find((r) => r.name == options.roleData.name);
           await role.delete().catch((e) => console.log('Failed to delete a role: ', e));
-          (await message.say(`Succcessfully deleted the role ${role.name}.`)).delete({ timeout: 5 * 1000 });
+          (await message.reply(`Succcessfully deleted the role ${role.name}.`)).delete({ timeout: 5 * 1000 });
           break;
         }
         case 'update': {
-          const role = <Role>guild.roles.cache.find((r) => r.name == confirm.options.roleData.name);
-          await role.edit(confirm.options.roleData).catch((e) => console.log('Failed to edit a role: ', e));
-          (await message.say(`Successfully edited the role ${role.name}.`)).delete({ timeout: 5 * 1000 });
+          const role = <Role>guild.roles.cache.find((r) => r.name == options.roleData.name);
+          await role.edit(options.roleData).catch((e) => console.log('Failed to edit a role: ', e));
+          (await message.reply(`Successfully edited the role ${role.name}.`)).delete({ timeout: 5 * 1000 });
           break;
         }
       }
@@ -44,7 +44,7 @@ export const handleRoleDataConfirmation = async (message: CommandoMessage, confi
       collector.stop();
       return;
     }
-    (await message.say('Canceling the command.')).delete({ timeout: 5 * 1000 });
+    (await message.reply('Canceling the command.')).delete({ timeout: 5 * 1000 });
     collector.stop();
   });
 };

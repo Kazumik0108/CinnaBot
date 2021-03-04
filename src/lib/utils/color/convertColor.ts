@@ -1,4 +1,4 @@
-import { ColorConvertOptions } from '../../types/common/interfaces';
+import { ColorConvertOptions } from '../../common/interfaces';
 
 const decToHex = (input: string) => {
   let output = parseInt(input, 10).toString(16).toUpperCase();
