@@ -1,8 +1,8 @@
 import { GuildMember, MessageReaction } from 'discord.js';
-
 import { allReceptionMessages } from '../../info/server/reception';
 
-export const handleReactionRole = (reaction: MessageReaction, guildMember: GuildMember) => {
+
+export const handleReactionRole = async (reaction: MessageReaction, guildMember: GuildMember) => {
   const embeds = reaction.message.embeds;
   if (embeds.length == 0) return;
 
