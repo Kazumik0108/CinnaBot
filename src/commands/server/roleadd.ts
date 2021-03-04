@@ -41,8 +41,8 @@ export default class RoleAdd extends Command {
           prompt: roleArgsPrompt.add,
           type: 'string',
           validate: (args: string) => {
-            const match = args.match(/^(?:color|hoist|position|perm add|perm del|default)/);
-            return match != null ? true : false;
+            const regex = /^(?:color|hoist|position|perm add|perm del|default)/;
+            return regex.test(args);
           },
           parse: (args: string, m: CommandoMessage) => handleRoleDataArgs(args, m),
         },
