@@ -31,3 +31,7 @@ readdir(join(__dirname, './events'), (error, files) => {
 });
 
 client.login(process.env.CLIENT_TOKEN);
+
+process.on('unhandledRejection', (error) => {
+  console.error('Unhandled promise rejection: ', error);
+});
