@@ -3,16 +3,15 @@ import { stripIndents } from 'common-tags';
 export const EmbedMessageFieldsPrompt = () => stripIndents`
   Specify the fields of the embed message, or \`next\` to use none. Field values may span multiple lines. Use the key phrases below to separate field arguments and different fields. Omitting the argument \`inline\` will default it to \`FALSE\`.
   \`\`\`
-  > field name: <name> value: <value> inline: <boolean>
+  name: <name> value: <value> inline: <boolean>
 
   ---EXAMPLE---
-  > field name: Hoisted value: FALSE inline: true
-  > field name: Permissions value: ADD_REACTIONS
-  > ATTACH_FILES
-  > CONNECT
-  > inline: false
+  name: Hoisted value: FALSE inline: true
+  name: Permissions value: ADD_REACTIONS
+  ATTACH_FILES
+  CONNECT
+  inline: false
   \`\`\``;
-
 // interface MessageContents {
 //   content: string;
 //   embed: MessageEmbed[];
