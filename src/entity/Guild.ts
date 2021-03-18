@@ -1,16 +1,11 @@
-import { BaseEntity, Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, OneToMany } from 'typeorm';
+import { Base } from './Base';
 import { Channel } from './Channel';
 import { ReactionRole } from './ReactionRole';
 
-@Entity({ name: 'guilds' })
-export class Guild extends BaseEntity {
-  @PrimaryGeneratedColumn({ type: 'bigint' })
-  id!: string;
-
+@Entity()
+export class Guild extends Base {
   @Column()
-  name!: string;
-
-  @Column({ default: '+' })
   prefix!: string;
 
   @OneToMany(() => Channel, (channel) => channel.guild, { cascade: true })

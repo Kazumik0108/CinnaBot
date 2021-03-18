@@ -4,7 +4,7 @@ import { Reaction } from './Reaction';
 
 @Entity()
 export class Embed extends BaseEntity {
-  @PrimaryGeneratedColumn({ type: 'bigint' })
+  @PrimaryGeneratedColumn()
   title!: string;
 
   @ManyToOne(() => Channel, (channel) => channel.embed)

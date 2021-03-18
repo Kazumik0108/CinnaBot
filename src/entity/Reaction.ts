@@ -1,15 +1,10 @@
-import { BaseEntity, Column, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { Entity, ManyToOne, OneToMany } from 'typeorm';
+import { Base } from './Base';
 import { Embed } from './Embed';
 import { ReactionRole } from './ReactionRole';
 
 @Entity()
-export class Reaction extends BaseEntity {
-  @PrimaryGeneratedColumn({ type: 'bigint' })
-  id!: string;
-
-  @Column()
-  name!: string;
-
+export class Reaction extends Base {
   @OneToMany(() => ReactionRole, (role) => role.reaction, { cascade: true })
   roles!: ReactionRole[];
 

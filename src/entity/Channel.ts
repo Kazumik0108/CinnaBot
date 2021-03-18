@@ -1,15 +1,10 @@
-import { BaseEntity, Column, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { Entity, ManyToOne, OneToMany } from 'typeorm';
+import { Base } from './Base';
 import { Embed } from './Embed';
 import { Guild } from './Guild';
 
 @Entity()
-export class Channel extends BaseEntity {
-  @PrimaryGeneratedColumn({ type: 'bigint' })
-  id!: string;
-
-  @Column()
-  name!: string;
-
+export class Channel extends Base {
   @ManyToOne(() => Guild, (guild) => guild.channels)
   guild!: Guild;
 
