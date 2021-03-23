@@ -6,4 +6,5 @@
   "eslint.validate": [
     "javascript"
   ],
+  "references.preferredLocation": "view",
 }

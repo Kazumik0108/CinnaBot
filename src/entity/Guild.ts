@@ -5,7 +5,7 @@ import { ReactionRole } from './ReactionRole';
 
 @Entity()
 export class Guild extends Base {
-  @Column()
+  @Column({ default: '+' })
   prefix!: string;
 
   @OneToMany(() => Channel, (channel) => channel.guild, { cascade: true })
