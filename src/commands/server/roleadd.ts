@@ -1,5 +1,5 @@
 import { Command, CommandoClient, CommandoMessage } from 'discord.js-commando';
-import { roleArgsPrompt, handleRoleDataArgs } from '../../handlers/roles/handleRoleDataArgs';
+import { handleRoleDataArgs, roleArgsPrompt } from '../../handlers/roles/handleRoleDataArgs';
 import { handleRoleDataConfirmation } from '../../handlers/roles/handleRoleDataConfirmation';
 import { handleRoleDataEdit } from '../../handlers/roles/handleRoleDataEdit';
 import { handleRoleDataEmbed } from '../../handlers/roles/handleRoleDataEmbed';
@@ -59,9 +59,9 @@ export default class RoleAdd extends Command {
     };
 
     const embed = handleRoleDataEmbed(options);
-    const reply = await message.reply('Confirm with a reaction to create the role or abort the command.', embed);
+    const target = await message.reply('Confirm with a reaction to create the role or abort the command.', embed);
 
-    await handleRoleDataConfirmation({ message: message, options: options, target: reply, type: 'add' });
+    await handleRoleDataConfirmation(message, target, options, 'add');
     return null;
   }
 }

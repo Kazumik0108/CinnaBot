@@ -1,6 +1,6 @@
 import { Role } from 'discord.js';
 import { Command, CommandoClient, CommandoMessage } from 'discord.js-commando';
-import { roleArgsPrompt, handleRoleDataArgs } from '../../handlers/roles/handleRoleDataArgs';
+import { handleRoleDataArgs, roleArgsPrompt } from '../../handlers/roles/handleRoleDataArgs';
 import { handleRoleDataConfirmation } from '../../handlers/roles/handleRoleDataConfirmation';
 import { handleRoleDataEdit } from '../../handlers/roles/handleRoleDataEdit';
 import { handleRoleDataEmbed } from '../../handlers/roles/handleRoleDataEmbed';
@@ -57,7 +57,6 @@ export default class RoleEdit extends Command {
 
   async run(message: CommandoMessage, { role, args }: PromptArgs) {
     let data = getRoleData(role);
-    // console.log(args);
     data = handleRoleDataEdit(data, args);
     const options: RoleDataEmbedInputs = {
       message: message,
@@ -66,9 +65,9 @@ export default class RoleEdit extends Command {
     };
 
     const embed = handleRoleDataEmbed(options);
-    const reply = await message.reply('Confirm with a reaction to update the role or abort the command.', embed);
+    const target = await message.reply('Confirm with a reaction to update the role or abort the command.', embed);
 
-    await handleRoleDataConfirmation({ message: message, options: options, target: reply, type: 'update' });
+    await handleRoleDataConfirmation(message, target, options, 'update');
     return null;
   }
 }

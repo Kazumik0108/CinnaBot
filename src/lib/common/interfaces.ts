@@ -41,6 +41,13 @@ export interface ReactionOptionsBackNext {
   last?: EmojiIdentifierResolvable;
 }
 
+export interface ReactionCallbacksYesNo {
+  yes(): Promise<void>;
+  no(): Promise<void>;
+  edit?(): Promise<void>;
+  help?(): Promise<void>;
+}
+
 export interface ReactionFilterAny {
   message: Message;
   reaction: MessageReaction;

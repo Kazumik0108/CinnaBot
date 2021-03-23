@@ -51,9 +51,9 @@ export default class RoleDel extends Command {
     };
 
     const embed = handleRoleDataEmbed(options);
-    const reply = await message.reply('Confirm with a reaction to delete the role or abort the command.', embed);
+    const target = await message.reply('Confirm with a reaction to delete the role or abort the command.', embed);
 
-    await handleRoleDataConfirmation({ message: message, options: options, target: reply, type: 'delete' });
+    await handleRoleDataConfirmation(message, target, options, 'delete');
     return null;
   }
 }
