@@ -1,6 +1,6 @@
 import { Guild, Message, Role } from 'discord.js';
 import { ReactionCallbacksYesNo, ReactionOptionsYesNo, RoleDataEmbedInputs } from '../../lib/common/interfaces';
-import { createReactionCollector, createReactionOnCollect } from '../../lib/utils/collector/createReactionCollector';
+import { createReactionCollector, createReactionOnCollect } from '../../lib/utils/collector/collectorReaction';
 
 export const handleRoleDataConfirmation = async (
   message: Message,
