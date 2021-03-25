@@ -1,12 +1,12 @@
 import {
-  Message,
-  TextChannel,
-  VoiceChannel,
   CategoryChannel,
+  Client,
+  Guild,
+  Message,
   NewsChannel,
   StoreChannel,
-  Guild,
-  Client,
+  TextChannel,
+  VoiceChannel
 } from 'discord.js';
 
 export const getGuildChannel = (id: string, ref: Client | Message) => {
@@ -23,5 +23,7 @@ export const getGuildChannel = (id: string, ref: Client | Message) => {
       return channel as NewsChannel;
     case 'store':
       return channel as StoreChannel;
+    default:
+      return null;
   }
 };

@@ -1,12 +1,6 @@
 import { MessageEmbed } from 'discord.js';
 import { accessRolesMessage, colorRolesMessage, EmbedMessage, rulesMessage, welcomeMessage } from './reception';
 
-interface Channel {
-  id: string;
-  name: string;
-  messages: EmbedMessage[];
-}
-
 interface Guild {
   id: string;
   name: string;
