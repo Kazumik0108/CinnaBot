@@ -1,6 +1,9 @@
+import { MessageEmbed } from 'discord.js';
 import { Command, CommandoClient, CommandoMessage } from 'discord.js-commando';
 import { Guild } from '../../entity/Guild';
 import { handleConnection } from '../../handlers/database/handleConnection';
+import { handleQueryEmbed } from '../../handlers/database/handleQueryEmbed';
+import { EntityOutput } from '../../lib/common/types';
 
 export default class registerGuilds extends Command {
   constructor(client: CommandoClient) {
@@ -21,9 +24,11 @@ export default class registerGuilds extends Command {
     });
 
     const conn = await handleConnection();
-
     conn.createQueryBuilder().insert().into(Guild).values(values).orIgnore('g.id').execute();
+    const queries = await conn.createQueryBuilder().select('g').from(Guild, 'g').getMany();
 
+    const embed = <MessageEmbed>await handleQueryEmbed(message, conn, (Guild as unknown) as EntityOutput, queries);
+    message.embed(embed);
     return null;
   }
 }

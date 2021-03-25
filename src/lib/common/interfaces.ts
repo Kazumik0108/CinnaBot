@@ -22,11 +22,6 @@ export interface RoleDataConfirmationOptions {
   type: 'add' | 'update' | 'delete';
 }
 
-export interface MessageFilterOptions {
-  args: string[];
-  message: Message;
-}
-
 export interface ReactionOptionsYesNo {
   yes: EmojiIdentifierResolvable;
   no: EmojiIdentifierResolvable;
