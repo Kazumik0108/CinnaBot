@@ -1,34 +1,40 @@
-import { MessageEmbed } from 'discord.js';
 import { Command, CommandoClient, CommandoMessage } from 'discord.js-commando';
-import { Guild } from '../../entity/Guild';
+import { Guild } from '../../entity';
 import { handleConnection } from '../../handlers/database/handleConnection';
-import { handleQueryEmbed } from '../../handlers/database/handleQueryEmbed';
-import { EntityOutput } from '../../lib/common/types';
 
 export default class registerGuilds extends Command {
   constructor(client: CommandoClient) {
     super(client, {
       name: 'registerguilds',
-      aliases: ['regguilds', 'regg'],
+      aliases: ['regguilds', 'reggs', 'rgs'],
       memberName: 'registerguilds',
       group: 'database',
+      ownerOnly: true,
       description: 'Manually force the database to register all guilds to the database, if they do not already exist.',
     });
   }
 
   async run(message: CommandoMessage) {
-    const guilds = message.client.guilds.cache.array();
+    const conn = await handleConnection();
+    const guildQueries = await conn.getRepository(Guild).createQueryBuilder('g').getMany();
+
+    const guilds = message.client.guilds.cache.filter((g) => guildQueries.every((gq) => gq.id != g.id));
+
+    if (guilds.size == 0) {
+      message.reply('all guilds have already been registered into the database.');
+      return null;
+    }
+
     const values = guilds.map((g) => {
       const value = { id: g.id, name: g.name };
       return value;
     });
 
-    const conn = await handleConnection();
-    conn.createQueryBuilder().insert().into(Guild).values(values).orIgnore('g.id').execute();
-    const queries = await conn.createQueryBuilder().select('g').from(Guild, 'g').getMany();
+    await conn.createQueryBuilder().insert().into(Guild).values(values).orIgnore('g.id').execute();
 
-    const embed = <MessageEmbed>await handleQueryEmbed(message, conn, (Guild as unknown) as EntityOutput, queries);
-    message.embed(embed);
+    const names = guilds.map((g) => g.name).join('\n');
+    message.reply(`the following guilds have been added to the database:\n\`\`\`\n${names}\n\`\`\``);
+
     return null;
   }
 }

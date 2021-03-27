@@ -18,5 +18,5 @@ export const handleIDQuery = async (obj: Channel | Guild | GuildEmoji | Role, co
   }
 
   const query = await conn.getRepository(entity).createQueryBuilder('e').where('e.id = :id', { id: obj.id }).getOne();
-  return query;
+  return query as EntityChannel | EntityGuild | Reaction | ReactionRole | undefined;
 };
