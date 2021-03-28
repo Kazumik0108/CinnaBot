@@ -11,7 +11,7 @@ export class Embed extends BaseEntity {
   @Column()
   title!: string;
 
-  @ManyToOne(() => Channel, (channel) => channel.embed)
+  @ManyToOne(() => Channel, (channel) => channel.embeds)
   channel!: Channel;
 
   @Column('json', { default: null })

@@ -1,6 +1,6 @@
 import { Guild } from 'discord.js';
 
-export const getGuildMember = (id: string, guild: Guild) => {
-  const member = guild.member(id);
+export const getGuildMember = (property: string, guild: Guild) => {
+  const member = guild.member(property);
   return member != null ? member : null;
 };

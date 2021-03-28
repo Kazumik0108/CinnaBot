@@ -33,16 +33,16 @@ export default class registerEmbed extends Command {
           key: 'search',
           prompt: 'Mention the channel to search the embed message in.',
           type: 'string',
-          validate: (mention: string, msg: CommandoMessage) => {
+          validate: (mention: string) => {
             if (!CHANNEL_ID.test(mention)) return false;
             const id = (mention.match(CHANNEL_ID) as string[])[0];
 
-            const channel = <TextChannel | null>getGuildChannel(id, msg.client);
+            const channel = <TextChannel | null>getGuildChannel(id, this.client);
             return channel != null ? true : false;
           },
-          parse: (mention: string, msg: CommandoMessage) => {
+          parse: (mention: string) => {
             const id = (mention.match(CHANNEL_ID) as string[])[0];
-            const channel = <TextChannel>getGuildChannel(id, msg.client);
+            const channel = <TextChannel>getGuildChannel(id, this.client);
             return channel;
           },
         },
@@ -55,16 +55,16 @@ export default class registerEmbed extends Command {
           key: 'target',
           prompt: 'Mention the channel to register the embed message to.',
           type: 'string',
-          validate: (mention: string, msg: CommandoMessage) => {
+          validate: (mention: string) => {
             if (!CHANNEL_ID.test(mention)) return false;
             const id = (mention.match(CHANNEL_ID) as string[])[0];
 
-            const channel = <TextChannel | null>getGuildChannel(id, msg.client);
+            const channel = <TextChannel | null>getGuildChannel(id, this.client);
             return channel != null ? true : false;
           },
-          parse: (mention: string, msg: CommandoMessage) => {
+          parse: (mention: string) => {
             const id = (mention.match(CHANNEL_ID) as string[])[0];
-            const channel = <TextChannel>getGuildChannel(id, msg.client);
+            const channel = <TextChannel>getGuildChannel(id, this.client);
             return channel;
           },
         },

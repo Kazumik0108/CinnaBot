@@ -25,16 +25,16 @@ export default class registerChannel extends Command {
           key: 'channel',
           prompt: 'Mention the text channel to register.',
           type: 'string',
-          validate: (mention: string, msg: CommandoMessage) => {
+          validate: (mention: string) => {
             if (!CHANNEL_ID.test(mention)) return false;
             const id = (mention.match(CHANNEL_ID) as string[])[0];
 
-            const channel = <TextChannel | null>getGuildChannel(id, msg.client);
+            const channel = <TextChannel | null>getGuildChannel(id, this.client);
             return channel != null ? true : false;
           },
-          parse: (mention: string, msg: CommandoMessage) => {
+          parse: (mention: string) => {
             const id = (mention.match(CHANNEL_ID) as string[])[0];
-            const channel = <TextChannel>getGuildChannel(id, msg.client);
+            const channel = <TextChannel>getGuildChannel(id, this.client);
             return channel;
           },
         },

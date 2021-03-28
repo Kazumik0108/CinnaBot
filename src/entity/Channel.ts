@@ -9,5 +9,5 @@ export class Channel extends Base {
   guild!: Guild;
 
   @OneToMany(() => Embed, (embed) => embed.channel)
-  embed?: Embed;
+  embeds?: Embed[];
 }
