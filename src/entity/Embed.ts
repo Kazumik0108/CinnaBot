@@ -6,7 +6,7 @@ import { ReactionRole } from './ReactionRole';
 @Entity()
 export class Embed extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
-  id!: string;
+  uuid!: string;
 
   @Column()
   title!: string;
@@ -18,8 +18,8 @@ export class Embed extends BaseEntity {
   embed!: unknown;
 
   @OneToMany(() => Reaction, (reaction) => reaction.embed, { cascade: true })
-  reactions?: Reaction[];
+  reactions!: Reaction[];
 
   @OneToMany(() => ReactionRole, (role) => role.embed, { cascade: true })
-  roles?: ReactionRole[];
+  roles!: ReactionRole[];
 }
