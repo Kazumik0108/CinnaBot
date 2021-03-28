@@ -1,16 +1,7 @@
-import {
-  CategoryChannel,
-  Client,
-  Guild,
-  Message,
-  NewsChannel,
-  StoreChannel,
-  TextChannel,
-  VoiceChannel
-} from 'discord.js';
+import { CategoryChannel, Client, NewsChannel, StoreChannel, TextChannel, VoiceChannel } from 'discord.js';
 
-export const getGuildChannel = (id: string, ref: Client | Message) => {
-  const channel = ref instanceof Client ? ref.channels.cache.get(id) : (<Guild>ref.guild).channels.cache.get(id);
+export const getGuildChannel = (id: string, client: Client) => {
+  const channel = client.channels.cache.get(id);
   if (channel == undefined || channel.type == 'dm' || channel.type == 'unknown') return null;
   switch (channel.type) {
     case 'text':

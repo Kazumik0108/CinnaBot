@@ -1,7 +1,6 @@
-import { CommandoMessage } from 'discord.js-commando';
+import { Guild } from 'discord.js';
 
-export const getGuildMember = (id: string, m: CommandoMessage) => {
-  const member = m.guild.member(id);
-  if (member != null) return member;
-  return null;
+export const getGuildMember = (id: string, guild: Guild) => {
+  const member = guild.member(id);
+  return member != null ? member : null;
 };

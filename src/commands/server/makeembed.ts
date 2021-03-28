@@ -45,13 +45,13 @@ export default class makeEmbed extends Command {
             const match = mention.match(CHANNEL_ID);
             if (match == null) return false;
             const id = match[0];
-            const channel = getGuildChannel(id, m);
+            const channel = getGuildChannel(id, m.client);
             return channel != null ? true : false;
           },
           parse: (mention: string, m: CommandoMessage) => {
             const match = <RegExpMatchArray>mention.match(CHANNEL_ID);
             const id = match[0];
-            const channel = <TextChannel>getGuildChannel(id, m);
+            const channel = <TextChannel>getGuildChannel(id, m.client);
             return channel;
           },
         },

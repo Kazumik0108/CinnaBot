@@ -1,5 +1,5 @@
 import { stripIndents } from 'common-tags';
-import { Message, MessageEmbed, TextChannel } from 'discord.js';
+import { MessageEmbed, TextChannel } from 'discord.js';
 import { Command, CommandoClient, CommandoMessage } from 'discord.js-commando';
 import { Channel, Embed } from '../../entity';
 import { handleConnection } from '../../handlers/database/handleConnection';
@@ -33,16 +33,16 @@ export default class registerEmbed extends Command {
           key: 'search',
           prompt: 'Mention the channel to search the embed message in.',
           type: 'string',
-          validate: (mention: string, msg: Message) => {
+          validate: (mention: string, msg: CommandoMessage) => {
             if (!CHANNEL_ID.test(mention)) return false;
             const id = (mention.match(CHANNEL_ID) as string[])[0];
 
-            const channel = <TextChannel | null>getGuildChannel(id, msg);
+            const channel = <TextChannel | null>getGuildChannel(id, msg.client);
             return channel != null ? true : false;
           },
-          parse: (mention: string, msg: Message) => {
+          parse: (mention: string, msg: CommandoMessage) => {
             const id = (mention.match(CHANNEL_ID) as string[])[0];
-            const channel = <TextChannel>getGuildChannel(id, msg);
+            const channel = <TextChannel>getGuildChannel(id, msg.client);
             return channel;
           },
         },
@@ -55,16 +55,16 @@ export default class registerEmbed extends Command {
           key: 'target',
           prompt: 'Mention the channel to register the embed message to.',
           type: 'string',
-          validate: (mention: string, msg: Message) => {
+          validate: (mention: string, msg: CommandoMessage) => {
             if (!CHANNEL_ID.test(mention)) return false;
             const id = (mention.match(CHANNEL_ID) as string[])[0];
 
-            const channel = <TextChannel | null>getGuildChannel(id, msg);
+            const channel = <TextChannel | null>getGuildChannel(id, msg.client);
             return channel != null ? true : false;
           },
-          parse: (mention: string, msg: Message) => {
+          parse: (mention: string, msg: CommandoMessage) => {
             const id = (mention.match(CHANNEL_ID) as string[])[0];
-            const channel = <TextChannel>getGuildChannel(id, msg);
+            const channel = <TextChannel>getGuildChannel(id, msg.client);
             return channel;
           },
         },

@@ -1,4 +1,4 @@
-import { Message, TextChannel } from 'discord.js';
+import { TextChannel } from 'discord.js';
 import { Command, CommandoClient, CommandoMessage } from 'discord.js-commando';
 import { Channel, Guild } from '../../entity';
 import { handleConnection } from '../../handlers/database/handleConnection';
@@ -25,16 +25,16 @@ export default class registerChannel extends Command {
           key: 'channel',
           prompt: 'Mention the text channel to register.',
           type: 'string',
-          validate: (mention: string, msg: Message) => {
+          validate: (mention: string, msg: CommandoMessage) => {
             if (!CHANNEL_ID.test(mention)) return false;
             const id = (mention.match(CHANNEL_ID) as string[])[0];
 
-            const channel = <TextChannel | null>getGuildChannel(id, msg);
+            const channel = <TextChannel | null>getGuildChannel(id, msg.client);
             return channel != null ? true : false;
           },
-          parse: (mention: string, msg: Message) => {
+          parse: (mention: string, msg: CommandoMessage) => {
             const id = (mention.match(CHANNEL_ID) as string[])[0];
-            const channel = <TextChannel>getGuildChannel(id, msg);
+            const channel = <TextChannel>getGuildChannel(id, msg.client);
             return channel;
           },
         },
