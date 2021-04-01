@@ -1,5 +1,6 @@
-import { BaseEntity, Column, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { BaseEntity, Column, Entity, ManyToMany, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { Channel } from './Channel';
+import { Guild } from './Guild';
 import { Reaction } from './Reaction';
 import { ReactionRole } from './ReactionRole';
 
@@ -11,15 +12,22 @@ export class Embed extends BaseEntity {
   @Column()
   title!: string;
 
+  @ManyToOne(() => Guild, (guild) => guild.embeds)
+  guild!: Guild;
+
   @ManyToOne(() => Channel, (channel) => channel.embeds)
   channel!: Channel;
 
   @Column('json', { default: null })
   embed!: unknown;
 
-  @OneToMany(() => Reaction, (reaction) => reaction.embed, { cascade: true })
+  @ManyToMany(() => Reaction, (reaction) => reaction.embeds, { cascade: true })
   reactions!: Reaction[];
 
   @OneToMany(() => ReactionRole, (role) => role.embed, { cascade: true })
   roles!: ReactionRole[];
+
+  getEmbed = () => this.embed;
+
+  getValue = () => `${this.title} | ${this.channel.name}`;
 }

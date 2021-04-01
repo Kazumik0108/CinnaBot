@@ -1,6 +1,7 @@
-import 'reflect-metadata';
+import { Guild as DiscordGuild, Role } from 'discord.js';
 import { Column, ManyToOne } from 'typeorm';
 import { Entity } from 'typeorm/decorator/entity/Entity';
+import { getGuildRole } from '../lib/utils/guild/getGuildRole';
 import { Base } from './Base';
 import { Embed } from './Embed';
 import { Guild } from './Guild';
@@ -15,8 +16,10 @@ export class ReactionRole extends Base {
   enabled!: boolean;
 
   @ManyToOne(() => Embed, (embed) => embed.roles)
-  embed!: Embed;
+  embed?: Embed;
 
   @ManyToOne(() => Reaction, (reaction) => reaction.roles)
-  reaction!: Reaction;
+  reaction?: Reaction;
+
+  getRole = (guild: DiscordGuild) => <Role>getGuildRole(this.id, guild);
 }
