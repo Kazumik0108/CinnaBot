@@ -1,7 +1,6 @@
 import { config } from 'dotenv';
 import { join } from 'path';
 import { handleClientInitialization } from './handlers/handleClientInitialization';
-import { handleTwitterInitialization } from './handlers/handleTwitterInitialization';
 
 config({ path: join(__dirname, '../process.env') });
 
@@ -13,7 +12,7 @@ const main = async () => {
     console.error('Unhandled promise rejection: ', error);
   });
 
-  await handleTwitterInitialization(client);
+  // await handleTwitterInitialization(client);
 };
 
 main();
