@@ -1,11 +1,8 @@
-import { Guild, MessageEmbed, TextChannel } from 'discord.js';
-import { Command, CommandoClient, CommandoMessage } from 'discord.js-commando';
+import { MessageEmbed } from 'discord.js';
+import { CommandoClient, CommandoMessage } from 'discord.js-commando';
 import { Channel as EntityChannel, Embed, Guild as EntityGuild, Reaction, ReactionRole } from '../../entity';
-import { handleConnection } from '../../handlers/database/handleConnection';
+import { ConnectionClient, ConnectionCommand } from '../../lib/common/classes';
 import { getGuild } from '../../lib/utils/guild/getGuild';
-import { getGuildChannel } from '../../lib/utils/guild/getGuildChannel';
-import { getGuildEmoji } from '../../lib/utils/guild/getGuildEmoji';
-import { getGuildRole } from '../../lib/utils/guild/getGuildRole';
 
 interface GuildObjectValues {
   guild: string;
@@ -25,35 +22,13 @@ const getGuildFromOwner = (client: CommandoClient, message: CommandoMessage) => 
   return message.guild;
 };
 
-const getGuildObject = (e: EntityGuild | EntityChannel | Reaction | ReactionRole, message: CommandoMessage) => {
-  return e instanceof EntityGuild
-    ? getGuild(e.id, message.client)
-    : e instanceof EntityChannel
-      ? (getGuildChannel(e.id, message.client) as TextChannel | null)
-      : e instanceof Reaction
-        ? getGuildEmoji(e.id, message.guild)
-        : e instanceof ReactionRole
-          ? getGuildRole(e.id, message.guild)
-          : null;
-};
-
-const getEmbedValue = (e: Embed, c: EntityChannel) => {
-  return `${e.title} | ${c.name}`;
-};
-
 const getGuildValues = (g: EntityGuild, message: CommandoMessage) => {
   const values: GuildObjectValues = {
-    guild: (<Guild>getGuildObject(g, message)).toString(),
-    channels: (<EntityChannel[]>g.channels).map((c) => <TextChannel>getGuildObject(c, message)).join('\n'),
-    embeds: (<EntityChannel[]>g.channels)
-      .map((c) => (<Embed[]>c.embeds).map((e) => getEmbedValue(e, c)).join('\n'))
-      .join('\n'),
-    reactions: (<EntityChannel[]>g.channels)
-      .map((c) =>
-        (<Embed[]>c.embeds).map((e) => e.reactions.map((r) => `${getGuildObject(r, message)} | ${e.title}`)).join('\n'),
-      )
-      .join('\n'),
-    roles: (<ReactionRole[]>g.roles).map((r) => `${getGuildObject(r, message)} | ${r.enabled}`).join('\n'),
+    guild: g.getGuild(message.client).toString(),
+    channels: (<EntityChannel[]>g.channels).map((c) => c.getChannel(message.guild).toString()).join('\n'),
+    embeds: (<Embed[]>g.embeds).map((e) => e.getValue()).join('\n'),
+    reactions: (<Reaction[]>g.reactions).map((r) => r.getValue(message.guild)).join('\n'),
+    roles: (<ReactionRole[]>g.roles).map((r) => r.getRole(message.guild)).join('\n'),
   };
 
   return values;
@@ -61,8 +36,8 @@ const getGuildValues = (g: EntityGuild, message: CommandoMessage) => {
 
 const noEntries = 'No Entries';
 
-export default class viewGuild extends Command {
-  constructor(client: CommandoClient) {
+export default class viewGuild extends ConnectionCommand {
+  constructor(client: ConnectionClient) {
     super(client, {
       name: 'viewguild',
       aliases: ['viewg', 'vg'],
@@ -74,17 +49,15 @@ export default class viewGuild extends Command {
   }
 
   async run(message: CommandoMessage) {
-    const conn = await handleConnection();
-
     const guild = this.client.owners.includes(message.author) ? getGuildFromOwner(this.client, message) : message.guild;
 
-    const queryGuild = await conn
+    const queryGuild = await this.client.conn
       .getRepository(EntityGuild)
       .createQueryBuilder('g')
       .leftJoinAndSelect('g.channels', 'channel')
+      .leftJoinAndSelect('g.embeds', 'embed')
+      .leftJoinAndSelect('g.reactions', 'reaction')
       .leftJoinAndSelect('g.roles', 'role')
-      .leftJoinAndSelect('channel.embeds', 'embed')
-      .leftJoinAndSelect('embed.reactions', 'reaction')
       .where('g.id = :id', { id: guild.id })
       .getOne();
 
