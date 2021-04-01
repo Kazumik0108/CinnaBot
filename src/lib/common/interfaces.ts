@@ -1,4 +1,10 @@
 import { ColorResolvable, EmojiIdentifierResolvable, Message, MessageReaction, Role, RoleData, User } from 'discord.js';
+import { CommandoClientOptions } from 'discord.js-commando';
+import { Connection } from 'typeorm';
+
+export interface ConnectionClientOptions extends CommandoClientOptions {
+  conn: Connection;
+}
 
 export interface RoleDataArgs {
   default: boolean;
