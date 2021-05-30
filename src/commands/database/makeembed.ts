@@ -1,173 +1,127 @@
-import {
-  MessageEmbedFooter,
-  MessageEmbedImage,
-  MessageEmbedOptions,
-  MessageEmbedThumbnail,
-  TextChannel
-} from 'discord.js';
+/* eslint-disable no-shadow */
+import { MessageEmbed, MessageReaction, TextChannel, User } from 'discord.js';
 import { Command, CommandoClient, CommandoMessage } from 'discord.js-commando';
-import isImageUrl from 'is-image-url';
-import isUrl from 'is-url';
-import { handleEmbedMessageData } from '../../handlers/embed/handleEmbedMessageData';
-import { CHANNEL_ID } from '../../lib/common/regex';
-import { hexColorParser } from '../../lib/utils/color/parseHexColor';
+import { handleEmbedInputs } from '../../handlers/database/handleEmbedInputs';
+import { sleep } from '../../lib/utils/collector/sleep';
 import { getGuildChannel } from '../../lib/utils/guild/getGuildChannel';
 
 interface PromptArgs {
   channel: TextChannel;
-  title: string;
-  url: string | undefined;
-  description: string;
-  color: string;
-  thumbnail: MessageEmbedThumbnail | undefined;
-  image: MessageEmbedImage | undefined;
-  footer: MessageEmbedFooter;
 }
+
+enum ReactionYesNo {
+  yes = '✅',
+  no = '❌',
+}
+
+const save = '💾';
 
 export default class makeEmbed extends Command {
   constructor(client: CommandoClient) {
     super(client, {
       name: 'makeembed',
-      aliases: ['membed'],
-      group: 'server',
+      aliases: ['membed', 'me'],
+      group: 'database',
       memberName: 'makeembed',
-      description: 'Creates and sends an embed message to a channel within the server.',
+      description:
+        'Creates and sends an embed message to a channel within the server, with the option to register it to the database.',
       guildOnly: true,
       clientPermissions: ['MANAGE_MESSAGES'],
       userPermissions: ['MANAGE_MESSAGES'],
-      argsSingleQuotes: true,
       args: [
         {
           key: 'channel',
-          prompt: 'Mention the target channel for the embed message.',
+          prompt: 'Specify the target text channel for the embed message.',
           type: 'string',
-          validate: (mention: string, m: CommandoMessage) => {
-            const match = mention.match(CHANNEL_ID);
-            if (match == null) return false;
-            const id = match[0];
-            const channel = getGuildChannel(id, m.client);
-            return channel != null ? true : false;
+          validate: (input: string, m: CommandoMessage) => {
+            const channel = getGuildChannel(input, m.guild);
+            return channel != null && channel.type == 'text' ? true : false;
           },
-          parse: (mention: string, m: CommandoMessage) => {
-            const match = <RegExpMatchArray>mention.match(CHANNEL_ID);
-            const id = match[0];
-            const channel = <TextChannel>getGuildChannel(id, m.client);
+          parse: (input: string, m: CommandoMessage) => {
+            const channel = getGuildChannel(input, m.guild) as TextChannel;
             return channel;
           },
         },
-        {
-          key: 'title',
-          prompt: 'Specify the title for the embed message.',
-          type: 'string',
-        },
-        {
-          key: 'url',
-          prompt: 'Specify a URL to link the title to, or `next` to use none.',
-          type: 'string',
-          validate: (url: string) => {
-            if (url == 'next') return true;
-            return isUrl(url);
-          },
-          parse: (url: string) => {
-            return url == 'next' ? undefined : url;
-          },
-        },
-        {
-          key: 'description',
-          prompt: 'Specify a description for the embed message, or `next` to leave it empty.',
-          type: 'string',
-          parse: (description: string) => {
-            return description == 'next' ? undefined : description;
-          },
-        },
-        {
-          key: 'color',
-          prompt: 'Specify a hex color for the embed message, or `next` to default to #000 (black).',
-          type: 'string',
-          validate: (color: string) => {
-            if (color == 'next') return true;
-            return hexColorParser(color) != null ? true : false;
-          },
-          parse: (string: string) => {
-            if (string == 'next') return undefined;
-            return <string>hexColorParser(string);
-          },
-        },
-        {
-          key: 'thumbnail',
-          prompt: 'Specify a URL for the thumbnail, or `next` to use none.',
-          type: 'string',
-          validate: (url: string) => {
-            if (url == 'next') return true;
-            return isImageUrl(url);
-          },
-          parse: (url: string) => {
-            if (url == 'next') return undefined;
-            const image: MessageEmbedThumbnail = {
-              url: url,
-            };
-            return image;
-          },
-        },
-        {
-          key: 'image',
-          prompt: 'Specify a URL for the bottom image, or `next` to use none.',
-          type: 'string',
-          validate: (url: string) => {
-            if (url == 'next') return true;
-            return isImageUrl(url);
-          },
-          parse: (url: string) => {
-            if (url == 'next') return undefined;
-            const image: MessageEmbedImage = {
-              url: url,
-            };
-            return image;
-          },
-        },
-        {
-          key: 'footer',
-          prompt: 'Specify a footer for the embed message, or `next` to use none.',
-          type: 'string',
-          parse: (text: string) => {
-            if (text == 'next') return undefined;
-            const footer: MessageEmbedFooter = {
-              text: text,
-            };
-            return footer;
-          },
-        },
-        // {
-        //   key: 'fields',
-        //   prompt: EmbedMessageFieldsPrompt(),
-        //   type: 'string',
-        //   validate: (string: string) => {
-        //     const match = string.match(/^(?:field)/);
-        //     return match != null ? true : false;
-        //   },
-        // },
       ],
     });
   }
 
-  async run(
-    message: CommandoMessage,
-    { channel, title, url, description, color, thumbnail, image, footer }: PromptArgs,
-  ) {
-    const embedData: MessageEmbedOptions = {
-      title: title,
-      url: url,
-      description: description,
-      color: color,
-      thumbnail: thumbnail,
-      image: image,
-      footer: footer,
-      timestamp: new Date(),
-    };
-
-    const embed = handleEmbedMessageData(embedData, message);
-    channel.send(embed);
-
+  async run(message: CommandoMessage, { channel }: PromptArgs) {
+    const embed = await handleEmbedInputs(message);
+    await sendEmbed(message, channel, embed);
+    await saveEmbed(message, embed);
     return null;
   }
+}
+
+async function sendEmbed(message: CommandoMessage, channel: TextChannel, embed: MessageEmbed) {
+  const msg = await message.say(
+    `React with ${ReactionYesNo.yes} to send the embed to ${channel} or ${ReactionYesNo.no} to cancel the command.`,
+    embed,
+  );
+
+  for (const reaction of Object.values(ReactionYesNo)) {
+    await msg.react(reaction);
+  }
+
+  const collector = msg.createReactionCollector(
+    (reaction: MessageReaction, user: User) => filter(message.author, reaction, user),
+    {
+      time: 30 * 1000,
+      maxEmojis: 1,
+    },
+  );
+
+  collector.on('collect', (reaction: MessageReaction) => {
+    switch (reaction.emoji.name) {
+      case ReactionYesNo.yes:
+        channel.send(embed).then(() => message.reply(`Embed successfuly sent to ${channel}.`));
+        break;
+      case ReactionYesNo.no:
+        message.reply('Canceling the command.');
+        break;
+    }
+    collector.stop();
+  });
+
+  while (!collector.ended) {
+    await sleep(1 * 1000);
+  }
+}
+
+async function saveEmbed(message: CommandoMessage, embed: MessageEmbed) {
+  const msg = await message.say(`React with ${save} to save the embed to ${message.guild}.`);
+  await msg.react(save);
+
+  const collector = msg.createReactionCollector(
+    (reaction: MessageReaction, user: User) => filterSave(message.author, reaction, user),
+    {
+      time: 30 * 1000,
+      maxEmojis: 1,
+    },
+  );
+
+  collector.on('collect', () => {
+    console.log(embed.author);
+    // save embed to database
+    collector.stop();
+  });
+}
+
+function filter(author: User, reaction: MessageReaction, user: User) {
+  if (author != user) return false;
+  if (!Object.values(ReactionYesNo).some((r) => reaction.emoji.name == r && reaction.emoji.id == null)) {
+    reaction.remove();
+    return false;
+  }
+  return true;
+}
+
+function filterSave(author: User, reaction: MessageReaction, user: User) {
+  if (author != user) return false;
+  if (reaction.emoji.name != save && reaction.emoji.id == null) {
+    reaction.remove();
+    return false;
+  }
+  return true;
 }

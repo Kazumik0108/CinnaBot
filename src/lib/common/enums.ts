@@ -85,3 +85,12 @@ export enum RolePermissions {
   MANAGE_WEBHOOKS = 'MANAGE_WEBHOOKS',
   MANAGE_EMOJIS = 'MANAGE_EMOJIS',
 }
+
+export enum EmbedInputs {
+  title = 'title',
+  description = 'description',
+  color = 'color',
+  image = 'image',
+  thumbnail = 'thumbnail',
+  json = 'json',
+}

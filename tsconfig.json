@@ -14,7 +14,7 @@
     "strictNullChecks": true,
     "noImplicitAny": true,
     "noImplicitReturns": true,
-    "noUnusedLocals": true,
+    "noUnusedLocals": false,
     "forceConsistentCasingInFileNames": true,
     "typeRoots": [
       "./node_modules/@types",
