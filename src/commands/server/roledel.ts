@@ -3,7 +3,7 @@ import { Command, CommandoClient, CommandoMessage } from 'discord.js-commando';
 import { handleRoleDataConfirmation } from '../../handlers/roles/handleRoleDataConfirmation';
 import { handleRoleDataEmbed } from '../../handlers/roles/handleRoleDataEmbed';
 import { RoleDataEmbedInputs } from '../../lib/common/interfaces';
-import { getGuildRole } from '../../lib/utils/guild/getGuildRole';
+import { getGuildRole } from '../../lib/utils/guild/role';
 import { getRoleData } from '../../lib/utils/role/getRoleData';
 
 interface PromptArgs {
@@ -29,11 +29,11 @@ export default class RoleDel extends Command {
           prompt: 'Specify the name of the role you want to delete.',
           type: 'string',
           validate: (name: string, m: CommandoMessage) => {
-            const role = getGuildRole(name, m);
+            const role = getGuildRole(name, m.guild);
             return role != null ? true : false;
           },
           parse: (name: string, m: CommandoMessage) => {
-            const role = <Role>getGuildRole(name, m);
+            const role = <Role>getGuildRole(name, m.guild);
             return role;
           },
           error: 'No roles with this name exist in this server. Try another name.',

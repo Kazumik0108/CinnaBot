@@ -94,3 +94,11 @@ export enum EmbedInputs {
   thumbnail = 'thumbnail',
   json = 'json',
 }
+
+export enum Entities {
+  Channel = 'channel',
+  Embed = 'embed',
+  Guild = 'guild',
+  Reaction = 'reaction',
+  Role = 'role',
+}

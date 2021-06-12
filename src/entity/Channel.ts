@@ -1,17 +1,15 @@
-import { Guild as DiscordGuild, TextChannel } from 'discord.js';
+import { Guild, GuildChannel } from 'discord.js';
 import { Entity, ManyToOne, OneToMany } from 'typeorm';
-import { getGuildChannel } from '../lib/utils/guild/getGuildChannel';
-import { Base } from './Base';
-import { Embed } from './Embed';
-import { Guild } from './Guild';
+import { Base, EmbedEntity, GuildEntity } from '.';
+import { getGuildChannel } from '../lib/utils/guild/channel';
 
-@Entity()
-export class Channel extends Base {
-  @ManyToOne(() => Guild, (guild) => guild.channels)
-  guild!: Guild;
+@Entity({ name: 'channels' })
+export class ChannelEntity extends Base {
+  @ManyToOne(() => GuildEntity, (guild) => guild.channels)
+  guild!: GuildEntity;
 
-  @OneToMany(() => Embed, (embed) => embed.channel)
-  embeds?: Embed[];
+  @OneToMany(() => EmbedEntity, (embed) => embed.channel, { onDelete: 'CASCADE', onUpdate: 'CASCADE' })
+  embeds!: EmbedEntity[];
 
-  getChannel = (guild: DiscordGuild) => <TextChannel>getGuildChannel(this.id, guild);
+  getChannel = (guild: Guild) => getGuildChannel(this.id, guild) as GuildChannel;
 }

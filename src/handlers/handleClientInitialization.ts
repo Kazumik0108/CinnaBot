@@ -3,14 +3,14 @@ import { readdir } from 'fs';
 import { join } from 'path';
 import { currentowner, homeinvite, prefix } from '../config.json';
 import { ConnectionClient } from '../lib/common/classes';
-import { handleConnection } from './database/handleConnection';
+import { prepareConnection } from '../lib/database/prepareConnection';
 
 export const handleClientInitialization = async () => {
   const myIntents = new Intents(Intents.NON_PRIVILEGED);
   myIntents.remove(['DIRECT_MESSAGE_TYPING', 'GUILD_VOICE_STATES', 'GUILD_MESSAGE_TYPING']);
   myIntents.add(['GUILD_MEMBERS', 'GUILD_PRESENCES']);
 
-  const conn = await handleConnection();
+  const conn = await prepareConnection();
 
   const client = new ConnectionClient({
     commandPrefix: prefix,

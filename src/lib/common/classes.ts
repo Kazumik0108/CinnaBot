@@ -21,7 +21,8 @@ export abstract class ConnectionCommand extends Command {
 
   public abstract run(
     message: CommandoMessage,
-    args: Record<string, unknown> | string | string[],
+    // eslint-disable-next-line @typescript-eslint/ban-types
+    args: object | string | string[],
     fromPattern: boolean,
     result?: ArgumentCollectorResult,
   ): Promise<Message | Message[] | null> | null;

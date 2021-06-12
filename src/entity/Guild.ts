@@ -1,28 +1,30 @@
-import { Client, Guild as DiscordGuild } from 'discord.js';
+import { Client, Guild } from 'discord.js';
 import { Column, Entity, OneToMany } from 'typeorm';
-import { getGuild } from '../lib/utils/guild/getGuild';
-import { Base } from './Base';
-import { Channel } from './Channel';
-import { Embed } from './Embed';
-import { Reaction } from './Reaction';
-import { ReactionRole } from './ReactionRole';
+import { Base, ChannelEntity, EmbedEntity, ReactionEntity, RoleEntity } from '.';
+import { getGuild } from '../lib/utils/guild/guild';
 
-@Entity()
-export class Guild extends Base {
+@Entity({ name: 'guilds' })
+export class GuildEntity extends Base {
   @Column({ default: '+' })
   prefix!: string;
 
-  @OneToMany(() => Channel, (channel) => channel.guild, { cascade: true })
-  channels?: Channel[];
+  @OneToMany(() => ChannelEntity, (channel) => channel.guild, {
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE',
+  })
+  channels!: ChannelEntity[];
 
-  @OneToMany(() => Embed, (embed) => embed.guild, { cascade: true })
-  embeds?: Embed[];
+  @OneToMany(() => EmbedEntity, (embed) => embed.guild, { onDelete: 'CASCADE', onUpdate: 'CASCADE' })
+  embeds!: EmbedEntity[];
 
-  @OneToMany(() => Reaction, (reaction) => reaction.guild, { cascade: true })
-  reactions?: Reaction[];
+  @OneToMany(() => ReactionEntity, (reaction) => reaction.guild, {
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE',
+  })
+  reactions!: ReactionEntity[];
 
-  @OneToMany(() => ReactionRole, (role) => role.guild, { cascade: true })
-  roles?: ReactionRole[];
+  @OneToMany(() => RoleEntity, (role) => role.guild, { onDelete: 'CASCADE', onUpdate: 'CASCADE' })
+  roles!: RoleEntity[];
 
-  getGuild = (client: Client) => <DiscordGuild>getGuild(this.id, client);
+  getGuild = (client: Client) => <Guild>getGuild(this.id, client);
 }

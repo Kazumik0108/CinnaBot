@@ -1,10 +1,14 @@
-import { MessageEmbed } from 'discord.js';
-import { CommandoClient, CommandoMessage } from 'discord.js-commando';
-import { Channel as EntityChannel, Embed, Guild as EntityGuild, Reaction, ReactionRole } from '../../entity';
+import { Message, MessageEmbed } from 'discord.js';
+import { CommandoGuild, CommandoMessage } from 'discord.js-commando';
+import { GuildEntity } from '../../entity';
 import { ConnectionClient, ConnectionCommand } from '../../lib/common/classes';
-import { getGuild } from '../../lib/utils/guild/getGuild';
+import { Entities } from '../../lib/common/enums';
+import { isGuildEntity } from '../../lib/database/getEntity';
+import { registerGuildOnValidate } from '../../lib/database/registerOnValidate';
+import { selectOne } from '../../lib/database/select';
+import { validate } from '../../lib/database/validate';
 
-interface GuildObjectValues {
+interface GuildView {
   guild: string;
   channels: string;
   embeds: string;
@@ -12,29 +16,7 @@ interface GuildObjectValues {
   roles: string;
 }
 
-const getGuildFromOwner = (client: CommandoClient, message: CommandoMessage) => {
-  const i = message.content.indexOf(' ');
-  if (i != -1) {
-    const property = message.content.substring(i + 1);
-    const guild = getGuild(property, client);
-    return guild != null ? guild : message.guild;
-  }
-  return message.guild;
-};
-
-const getGuildValues = (g: EntityGuild, message: CommandoMessage) => {
-  const values: GuildObjectValues = {
-    guild: g.getGuild(message.client).toString(),
-    channels: (<EntityChannel[]>g.channels).map((c) => c.getChannel(message.guild).toString()).join('\n'),
-    embeds: (<Embed[]>g.embeds).map((e) => e.getValue()).join('\n'),
-    reactions: (<Reaction[]>g.reactions).map((r) => r.getValue(message.guild)).join('\n'),
-    roles: (<ReactionRole[]>g.roles).map((r) => r.getRole(message.guild)).join('\n'),
-  };
-
-  return values;
-};
-
-const noEntries = 'No Entries';
+// const noEntries = 'No Entries';
 
 export default class viewGuild extends ConnectionCommand {
   constructor(client: ConnectionClient) {
@@ -49,52 +31,114 @@ export default class viewGuild extends ConnectionCommand {
   }
 
   async run(message: CommandoMessage) {
-    const guild = this.client.owners.includes(message.author) ? getGuildFromOwner(this.client, message) : message.guild;
+    const conn = this.client.conn;
+    const guild = this.client.owners.includes(message.author) ? await getGuildFromOwner(message) : message.guild;
 
-    const queryGuild = await this.client.conn
-      .getRepository(EntityGuild)
-      .createQueryBuilder('g')
-      .leftJoinAndSelect('g.channels', 'channel')
-      .leftJoinAndSelect('g.embeds', 'embed')
-      .leftJoinAndSelect('g.reactions', 'reaction')
-      .leftJoinAndSelect('g.roles', 'role')
-      .where('g.id = :id', { id: guild.id })
-      .getOne();
+    const exists = await validate(conn, guild, Entities.Guild);
+    if (!exists) registerGuildOnValidate(this.client.conn, message, guild);
 
-    if (queryGuild == undefined) {
-      message.reply(`${guild} was not found in the database. Try registering it with the command \`+registerguild\``);
-      return null;
-    }
+    const entity = await selectOne(conn, guild, Entities.Guild);
+    if (entity == undefined || !isGuildEntity(entity)) return null;
 
-    const values = getGuildValues(queryGuild, message);
+    entity.channels = await conn.createQueryBuilder().relation(GuildEntity, 'channels').of(guild).loadMany();
+    entity.embeds = await conn.createQueryBuilder().relation(GuildEntity, 'embeds').of(guild).loadMany();
+    entity.reactions = await conn.createQueryBuilder().relation(GuildEntity, 'reactions').of(guild).loadMany();
+    entity.roles = await conn.createQueryBuilder().relation(GuildEntity, 'roles').of(guild).loadMany();
+
+    const view: GuildView = {
+      guild: entity.name,
+      channels: entity.channels.map((c) => c.getChannel(guild)).join('\n'),
+      embeds: entity.embeds.map((e) => e.title).join('\n'),
+      reactions: entity.reactions.map((r) => `${r.getReaction(guild)} \\${r.getReaction(guild)}`).join('\n'),
+      roles: entity.roles.map((r) => r.getRole(guild)).join('\n'),
+    };
+
+    const none = 'No entries';
     const embed = new MessageEmbed()
       .setAuthor(message.author.username, message.author.displayAvatarURL())
-      .setTitle(`Database Entries`)
+      .setTitle(view.guild)
       .setThumbnail(guild.iconURL() as string)
       .addFields([
         {
-          name: 'Guild',
-          value: values.guild,
-        },
-        {
           name: 'Channels',
-          value: values.channels || noEntries,
+          value: view.channels || none,
         },
         {
           name: 'Embed Messages',
-          value: values.embeds || noEntries,
+          value: view.embeds || none,
         },
         {
           name: 'Reactions',
-          value: values.reactions || noEntries,
+          value: view.reactions || none,
         },
         {
           name: 'Roles',
-          value: values.roles || noEntries,
+          value: view.roles || none,
         },
       ]);
 
     message.embed(embed);
     return null;
+    //   const embed = new MessageEmbed()
+    //     .setAuthor(message.author.username, message.author.displayAvatarURL())
+    //     .setTitle(`Database Entries`)
+    //     .setThumbnail(guild.iconURL() as string)
+    //     .addFields([
+    //       {
+    //         name: 'Guild',
+    //         value: values.guild,
+    //       },
+    //       {
+    //         name: 'Channels',
+    //         value: values.channels || noEntries,
+    //       },
+    //       {
+    //         name: 'Embed Messages',
+    //         value: values.embeds || noEntries,
+    //       },
+    //       {
+    //         name: 'Reactions',
+    //         value: values.reactions || noEntries,
+    //       },
+    //       {
+    //         name: 'Roles',
+    //         value: values.roles || noEntries,
+    //       },
+    //     ]);
+
+    //   message.embed(embed);
+    //   return null;
+    // }
   }
+}
+
+async function getGuildFromOwner(message: CommandoMessage) {
+  const guilds = message.client.guilds.cache.array();
+
+  let list = '';
+  guilds.forEach((g, i) => {
+    list = list.concat(`${i}\t${g.name}\n`);
+  });
+
+  await message.say('Select a guild to view, or `cancel` to end the command.\n```\n' + list + '\n```');
+  const collected = await message.channel.awaitMessages((m: CommandoMessage) => filter(message, m), {
+    max: 1,
+    time: 10 * 1000,
+  });
+
+  if (collected.first() == undefined) return message.guild;
+  const index = parseInt((collected.first() as Message).content);
+
+  return guilds[index] as CommandoGuild;
+}
+
+function filter(message: CommandoMessage, m: CommandoMessage) {
+  if (m.author != message.author) return false;
+  if (m.content.toLowerCase() == 'cancel') return true;
+
+  const match = m.content.match(/^[0-9|]+$/);
+  if (match == null) return false;
+
+  const num = parseFloat(match[0]);
+  return num >= 0 && num < message.client.guilds.cache.size ? true : false;
 }

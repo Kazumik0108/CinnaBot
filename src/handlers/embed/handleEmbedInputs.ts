@@ -87,9 +87,13 @@ async function editEmbed(embedMsg: CommandoMessage, embed: MessageEmbed, input: 
 
     case EmbedInputs.json: {
       const data = await getJSONData(arg as string);
-      if (data == null) return embedMsg.say('Invalid JSON form body.');
+      if (data == null) {
+        embedMsg.say('Invalid JSON form body.');
+        break;
+      }
       if (!Object.keys(data).some((k) => k == 'description')) {
-        return embedMsg.say('The field `description` is required.');
+        embedMsg.say('The field `description` is required.');
+        break;
       }
 
       try {

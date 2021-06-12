@@ -1,23 +1,18 @@
-import { Guild as DiscordGuild, GuildEmoji } from 'discord.js';
+import { Guild, GuildEmoji } from 'discord.js';
 import { Entity, ManyToMany, ManyToOne, OneToMany } from 'typeorm';
-import { getGuildEmoji } from '../lib/utils/guild/getGuildEmoji';
-import { Base } from './Base';
-import { Embed } from './Embed';
-import { Guild } from './Guild';
-import { ReactionRole } from './ReactionRole';
+import { Base, EmbedEntity, GuildEntity, RoleEntity } from '.';
+import { getGuildEmoji } from '../lib/utils/guild/emoji';
 
-@Entity()
-export class Reaction extends Base {
-  @ManyToOne(() => Guild, (guild) => guild.reactions)
-  guild!: Guild;
+@Entity({ name: 'reactions' })
+export class ReactionEntity extends Base {
+  @ManyToOne(() => GuildEntity, (guild) => guild.reactions)
+  guild!: GuildEntity;
 
-  @ManyToMany(() => Embed, (embed) => embed.reactions)
-  embeds?: Embed[];
+  @ManyToMany(() => EmbedEntity, (embed) => embed.reactions)
+  embeds!: EmbedEntity[];
 
-  @OneToMany(() => ReactionRole, (role) => role.reaction, { cascade: true })
-  roles?: ReactionRole[];
+  @OneToMany(() => RoleEntity, (role) => role.reaction, { onDelete: 'CASCADE', onUpdate: 'CASCADE' })
+  roles!: RoleEntity[];
 
-  getReaction = (guild: DiscordGuild) => <GuildEmoji>getGuildEmoji(this.id, guild);
-
-  getValue = (guild: DiscordGuild) => `${this.getReaction(guild)} | ${this.id}`;
+  getReaction = (guild: Guild) => <GuildEmoji>getGuildEmoji(this.id, guild);
 }

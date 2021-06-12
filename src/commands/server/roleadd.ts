@@ -5,7 +5,7 @@ import { handleRoleDataEdit } from '../../handlers/roles/handleRoleDataEdit';
 import { handleRoleDataEmbed } from '../../handlers/roles/handleRoleDataEmbed';
 import { RoleDataArgs, RoleDataEmbedInputs } from '../../lib/common/interfaces';
 import { defaultRole } from '../../lib/models/defaultRole';
-import { getGuildRole } from '../../lib/utils/guild/getGuildRole';
+import { getGuildRole } from '../../lib/utils/guild/role';
 
 interface PromptArgs {
   name: string;
@@ -31,7 +31,7 @@ export default class RoleAdd extends Command {
           prompt: 'Specify the name of the role you would like to create.',
           type: 'string',
           validate: (name: string, m: CommandoMessage) => {
-            const role = getGuildRole(name, m);
+            const role = getGuildRole(name, m.guild);
             return role == null ? true : false;
           },
           error: 'A role with this already exists in this server. Try another name.',

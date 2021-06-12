@@ -1,8 +1,9 @@
-import { Channel } from './Channel';
-import { Embed } from './Embed';
-import { Guild } from './Guild';
-import { Reaction } from './Reaction';
-import { ReactionRole } from './ReactionRole';
+import { Base } from './Base';
+import { ChannelEntity } from './Channel';
+import { EmbedEntity } from './Embed';
+import { GuildEntity } from './Guild';
+import { ReactionEntity } from './Reaction';
+import { RoleEntity } from './Role';
 
-export { Channel, Embed, Guild, Reaction, ReactionRole };
+export { Base, ChannelEntity, EmbedEntity, GuildEntity, ReactionEntity, RoleEntity };
 
