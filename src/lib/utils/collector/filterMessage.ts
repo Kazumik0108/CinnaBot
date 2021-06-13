@@ -1,14 +1,13 @@
 import { Message } from 'discord.js';
-import { MessageFilterOptions } from '../../common/interfaces';
 import { EMOJI } from '../../common/regex';
 
-export const messageEmojiFilter = (msg: Message) => {
+export const messageFilterEmoji = (msg: Message) => {
   const emoji = msg.content.match(EMOJI);
   return emoji != null ? true : false;
 };
 
-export const messageOptionsFilter = ({ args, message }: MessageFilterOptions) => {
-  const parse = message.content.split(/ +/);
+export const messageFilterArgs = (message: Message, target: Message, args: string[]) => {
+  const parse = target.content.split(/ +/);
   const arg = parse.slice(0, 1).join('').toLowerCase();
-  return args.includes(arg) ? true : false;
+  return message.author == target.author && args.includes(arg) ? true : false;
 };

@@ -1,11 +1,17 @@
-import { ReactionFilterAny, ReactionFilterOptions } from '../../common/interfaces';
+import { Message, MessageReaction, User } from 'discord.js';
+import { ReactionOptionsBackNext, ReactionOptionsYesNo } from '../../common/interfaces';
 
-export const reactionAnyFilter = ({ message, reaction, user }: ReactionFilterAny) => {
-  const emoji = message.client.emojis.cache.find((e) => e.name == reaction.emoji.name);
-  return user.id == message.author.id && emoji != undefined;
-};
+export const reactionFilter = (
+  message: Message,
+  reaction: MessageReaction,
+  user: User,
+  options?: ReactionOptionsYesNo | ReactionOptionsBackNext,
+) => {
+  if (options == undefined) {
+    const emoji = message.client.emojis.cache.find((e) => e.name == reaction.emoji.name);
+    return user.id == message.author.id && emoji != undefined;
+  }
 
-export const reactionOptionsFilter = ({ message, reaction, user, options }: ReactionFilterOptions) => {
-  const reactions: string[] = Object.values(options);
+  const reactions = <string[]>Object.values(options);
   return user.id == message.author.id && reactions.includes(reaction.emoji.name);
 };

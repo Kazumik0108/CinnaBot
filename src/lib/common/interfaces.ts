@@ -1,4 +1,10 @@
 import { ColorResolvable, EmojiIdentifierResolvable, Message, MessageReaction, Role, RoleData, User } from 'discord.js';
+import { CommandoClientOptions } from 'discord.js-commando';
+import { Connection } from 'typeorm';
+
+export interface ConnectionClientOptions extends CommandoClientOptions {
+  conn: Connection;
+}
 
 export interface RoleDataArgs {
   default: boolean;
@@ -22,11 +28,6 @@ export interface RoleDataConfirmationOptions {
   type: 'add' | 'update' | 'delete';
 }
 
-export interface MessageFilterOptions {
-  args: string[];
-  message: Message;
-}
-
 export interface ReactionOptionsYesNo {
   yes: EmojiIdentifierResolvable;
   no: EmojiIdentifierResolvable;
@@ -39,6 +40,13 @@ export interface ReactionOptionsBackNext {
   back: EmojiIdentifierResolvable;
   next: EmojiIdentifierResolvable;
   last?: EmojiIdentifierResolvable;
+}
+
+export interface ReactionCallbacksYesNo {
+  yes(): Promise<void>;
+  no(): Promise<void>;
+  edit?(): Promise<void>;
+  help?(): Promise<void>;
 }
 
 export interface ReactionFilterAny {

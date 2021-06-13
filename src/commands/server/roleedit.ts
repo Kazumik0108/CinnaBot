@@ -1,11 +1,11 @@
 import { Role } from 'discord.js';
 import { Command, CommandoClient, CommandoMessage } from 'discord.js-commando';
-import { roleArgsPrompt, handleRoleDataArgs } from '../../handlers/roles/handleRoleDataArgs';
+import { handleRoleDataArgs, roleArgsPrompt } from '../../handlers/roles/handleRoleDataArgs';
 import { handleRoleDataConfirmation } from '../../handlers/roles/handleRoleDataConfirmation';
 import { handleRoleDataEdit } from '../../handlers/roles/handleRoleDataEdit';
 import { handleRoleDataEmbed } from '../../handlers/roles/handleRoleDataEmbed';
 import { RoleDataArgs, RoleDataEmbedInputs } from '../../lib/common/interfaces';
-import { getGuildRole } from '../../lib/utils/guild/getGuildRole';
+import { getGuildRole } from '../../lib/utils/guild/role';
 import { getRoleData } from '../../lib/utils/role/getRoleData';
 
 interface PromptArgs {
@@ -32,11 +32,11 @@ export default class RoleEdit extends Command {
           prompt: 'Specify the name of the role you want to delete.',
           type: 'string',
           validate: (name: string, m: CommandoMessage) => {
-            const role = getGuildRole(name, m);
+            const role = getGuildRole(name, m.guild);
             return role != null ? true : false;
           },
           parse: (name: string, m: CommandoMessage) => {
-            const role = <Role>getGuildRole(name, m);
+            const role = <Role>getGuildRole(name, m.guild);
             return role;
           },
           error: 'No roles with this name exist in this server. Try another name.',
@@ -57,7 +57,6 @@ export default class RoleEdit extends Command {
 
   async run(message: CommandoMessage, { role, args }: PromptArgs) {
     let data = getRoleData(role);
-    // console.log(args);
     data = handleRoleDataEdit(data, args);
     const options: RoleDataEmbedInputs = {
       message: message,
@@ -66,9 +65,9 @@ export default class RoleEdit extends Command {
     };
 
     const embed = handleRoleDataEmbed(options);
-    const reply = await message.reply('Confirm with a reaction to update the role or abort the command.', embed);
+    const target = await message.reply('Confirm with a reaction to update the role or abort the command.', embed);
 
-    await handleRoleDataConfirmation({ message: message, options: options, target: reply, type: 'update' });
+    await handleRoleDataConfirmation(message, target, options, 'update');
     return null;
   }
 }

@@ -1,18 +1,15 @@
-import { BaseEntity, Column, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
-import { Embed } from './Embed';
-import { Guild } from './Guild';
+import { Guild, GuildChannel } from 'discord.js';
+import { Entity, ManyToOne, OneToMany } from 'typeorm';
+import { Base, EmbedEntity, GuildEntity } from '.';
+import { getGuildChannel } from '../lib/utils/guild/channel';
 
-@Entity()
-export class Channel extends BaseEntity {
-  @PrimaryGeneratedColumn({ type: 'bigint' })
-  id!: string;
+@Entity({ name: 'channels' })
+export class ChannelEntity extends Base {
+  @ManyToOne(() => GuildEntity, (guild) => guild.channels, { onDelete: 'CASCADE' })
+  guild!: GuildEntity;
 
-  @Column()
-  name!: string;
+  @OneToMany(() => EmbedEntity, (embed) => embed.channel)
+  embeds!: EmbedEntity[];
 
-  @ManyToOne(() => Guild, (guild) => guild.channels)
-  guild!: Guild;
-
-  @OneToMany(() => Embed, (embed) => embed.channel)
-  embed?: Embed;
+  getChannel = (guild: Guild) => getGuildChannel(this.id, guild) as GuildChannel;
 }

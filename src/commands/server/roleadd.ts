@@ -1,11 +1,11 @@
 import { Command, CommandoClient, CommandoMessage } from 'discord.js-commando';
-import { roleArgsPrompt, handleRoleDataArgs } from '../../handlers/roles/handleRoleDataArgs';
+import { handleRoleDataArgs, roleArgsPrompt } from '../../handlers/roles/handleRoleDataArgs';
 import { handleRoleDataConfirmation } from '../../handlers/roles/handleRoleDataConfirmation';
 import { handleRoleDataEdit } from '../../handlers/roles/handleRoleDataEdit';
 import { handleRoleDataEmbed } from '../../handlers/roles/handleRoleDataEmbed';
 import { RoleDataArgs, RoleDataEmbedInputs } from '../../lib/common/interfaces';
 import { defaultRole } from '../../lib/models/defaultRole';
-import { getGuildRole } from '../../lib/utils/guild/getGuildRole';
+import { getGuildRole } from '../../lib/utils/guild/role';
 
 interface PromptArgs {
   name: string;
@@ -31,7 +31,7 @@ export default class RoleAdd extends Command {
           prompt: 'Specify the name of the role you would like to create.',
           type: 'string',
           validate: (name: string, m: CommandoMessage) => {
-            const role = getGuildRole(name, m);
+            const role = getGuildRole(name, m.guild);
             return role == null ? true : false;
           },
           error: 'A role with this already exists in this server. Try another name.',
@@ -59,9 +59,9 @@ export default class RoleAdd extends Command {
     };
 
     const embed = handleRoleDataEmbed(options);
-    const reply = await message.reply('Confirm with a reaction to create the role or abort the command.', embed);
+    const target = await message.reply('Confirm with a reaction to create the role or abort the command.', embed);
 
-    await handleRoleDataConfirmation({ message: message, options: options, target: reply, type: 'add' });
+    await handleRoleDataConfirmation(message, target, options, 'add');
     return null;
   }
 }

@@ -10,6 +10,7 @@ export default async (client: CommandoClient) => {
   client.registry
     .registerDefaultTypes()
     .registerGroups([
+      ['database', 'Database Commands'],
       ['server', 'Server Function Commands'],
       ['events', 'Emit Client Event Commands'],
       ['emote', 'Emote and Reaction Commands'],
