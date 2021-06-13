@@ -2,7 +2,7 @@ import { Guild } from 'discord.js';
 import { Connection } from 'typeorm';
 import { getRepository, isEmbedRepo, isGuildRepo } from './getRepository';
 
-export async function validate(conn: Connection, guild: Guild, entity: string, id?: string, title?: string) {
+export async function validateByID(conn: Connection, guild: Guild, entity: string, id?: string, title?: string) {
   const repo = getRepository(conn, entity);
   if (repo == null) {
     console.log('Invalid repository provided for validate record: ', entity);

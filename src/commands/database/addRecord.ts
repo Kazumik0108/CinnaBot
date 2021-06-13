@@ -1,21 +1,19 @@
+import { stripIndents } from 'common-tags';
 import { GuildEmoji, Role, TextChannel } from 'discord.js';
 import { CommandoMessage } from 'discord.js-commando';
+import { Connection } from 'typeorm';
 import { ChannelEntity, GuildEntity, ReactionEntity, RoleEntity } from '../../entity';
 import { ConnectionClient, ConnectionCommand } from '../../lib/common/classes';
 import { Entities } from '../../lib/common/enums';
-import { CHANNEL_ID, EMOJI_ID, ROLE_ID } from '../../lib/common/regex';
+import { getRepository } from '../../lib/database/getRepository';
 import { registerOne } from '../../lib/database/register';
-import { registerGuildOnValidate } from '../../lib/database/registerOnValidate';
-import { validate } from '../../lib/database/validate';
-import { getGuildChannel, isGuildChannel, isTextChannel } from '../../lib/utils/guild/channel';
-import { getGuildEmoji, isEmoji, isGuildEmoji } from '../../lib/utils/guild/emoji';
-import { getGuildRole, isGuildRole, isRole } from '../../lib/utils/guild/role';
+import { validateByID } from '../../lib/database/validate';
+import { guildView } from '../../lib/database/view';
+import { getGuildChannel, isTextChannel } from '../../lib/utils/guild/channel';
+import { getGuildEmoji, isEmoji } from '../../lib/utils/guild/emoji';
+import { getGuildRole, isRole } from '../../lib/utils/guild/role';
 
-interface PromptArgs {
-  entity: string;
-}
-
-const entities = [Entities.Channel, Entities.Reaction, Entities.Role];
+const options = [Entities.Channel, Entities.Reaction, Entities.Role];
 
 export default class addRecord extends ConnectionCommand {
   constructor(client: ConnectionClient) {
@@ -24,126 +22,158 @@ export default class addRecord extends ConnectionCommand {
       aliases: ['arecord', 'ar'],
       memberName: 'ar',
       group: 'database',
-      description: 'Add a record to the database.',
+      description: "Add a guild, channel, reaction, or role record to the guild's database.",
       guildOnly: true,
-      args: [
-        {
-          key: 'entity',
-          prompt: `Specify the record type to add: \`${entities.join('`, `')}\``,
-          type: 'string',
-          oneOf: entities,
-        },
-      ],
+      userPermissions: ['MANAGE_MESSAGES'],
     });
   }
 
-  async run(message: CommandoMessage, { entity }: PromptArgs) {
+  async run(message: CommandoMessage) {
     const conn = this.client.conn;
-    const guildExists = await validate(conn, message.guild, Entities.Guild);
-    if (!guildExists) registerGuildOnValidate(conn, message, message.guild);
 
-    const recordType = entity == Entities.Channel ? 'text channel' : entity == Entities.Reaction ? 'emoji' : 'role';
-    const parser = entity == Entities.Channel ? parseChannel : entity == Entities.Reaction ? parseEmoji : parseRole;
+    const exists = await validateByID(conn, message.guild, Entities.Guild);
+    if (!exists) {
+      try {
+        await registerOne({ conn: conn, guild: message.guild, entity: Entities.Guild });
+      } catch (e) {
+        await message.say(`${message.guild} does not exist in the database and here was an error adding it.`);
+        console.error('An error occurred adding a guild to the database:', e);
+        return null;
+      }
+    }
 
-    await message.reply(
-      `Specify the name or id of the ${recordType} from this server to add, or enter \`cancel\` to end the command.`,
-    );
-    const collector = message.channel.createMessageCollector((m: CommandoMessage) => filter(m, message, entity), {
-      max: 1,
-      time: 10 * 1000,
+    const embed = await guildView(conn, message.guild);
+    if (embed == null) {
+      message.say(`There was an error creating a view for ${message.guild} ...`);
+      return null;
+    }
+    embed.setDescription('**Add Records**');
+
+    const prompt = stripIndents`
+    Specify the type of record to add: \`${options.join('`, `')}\`, followed by the name or id of the record.
+    Sending the channel mention or emoji is also valid. Multiple records of the same type can be entered at the same time.
+
+    For example: \`channel <#798740558943617025> 798740415692013599\` will add the text channels with ids \`798740558943617025\` and \`798740415692013599\`, if they exist in the guild.
+
+    Use \`stop\` to end the command.
+    `;
+    const view = await message.reply(prompt, embed);
+
+    const collector = message.channel.createMessageCollector((m: CommandoMessage) => filter(m, message, conn), {
+      time: 20 * 1000,
     });
 
     collector.on('collect', async (m: CommandoMessage) => {
-      if (m.content.toLowerCase() == 'cancel') {
-        await message.say('Cancelling the command ...');
-        return;
+      if (m.content.toLowerCase() == 'stop') {
+        m.say('Ending the command ...');
+        return collector.stop();
       }
 
-      const object = await parser(m);
-      if (object == null) return;
+      collector.resetTimer({ time: 20 * 1000 });
 
-      const exists = await validate(conn, message.guild, entity, object.id);
-      if (exists) return await message.say(`${object} is already registered to this guild. Try the command again ...`);
-      try {
-        if (isTextChannel(object)) {
-          await registerOne({ conn: conn, guild: message.guild, entity: entity, channel: object });
-          await conn.createQueryBuilder().relation(ChannelEntity, 'guild').of(object.id).set(object.guild.id);
-          await conn.createQueryBuilder().relation(GuildEntity, 'channels').of(object.guild.id).add(object.id);
-          await message.say(`${object} was successfully registered!`);
+      const entity = m.content.substr(0, m.content.indexOf(' '));
+      const records = (await parser(m, conn)) as (TextChannel | GuildEmoji | Role)[];
+
+      const repo = getRepository(conn, entity as string);
+      if (repo == null) return;
+
+      for (const record of records) {
+        try {
+          if (isTextChannel(record)) {
+            await registerOne({ conn: conn, guild: message.guild, entity: entity, channel: record });
+            await conn.createQueryBuilder().relation(ChannelEntity, 'guild').of(record.id).set(record.guild.id);
+            await conn.createQueryBuilder().relation(GuildEntity, 'channels').of(record.guild.id).add(record.id);
+          }
+          if (isEmoji(record)) {
+            await registerOne({ conn: conn, guild: message.guild, entity: entity, reaction: record });
+            await conn.createQueryBuilder().relation(ReactionEntity, 'guild').of(record.id).set(record.guild.id);
+            await conn.createQueryBuilder().relation(GuildEntity, 'embeds').of(record.guild.id).add(record.id);
+          }
+          if (isRole(record)) {
+            await registerOne({ conn: conn, guild: message.guild, entity: entity, role: record });
+            await conn.createQueryBuilder().relation(RoleEntity, 'guild').of(record.id).set(record.guild.id);
+            await conn.createQueryBuilder().relation(GuildEntity, 'embeds').of(record.guild.id).add(record.id);
+          }
+        } catch (e) {
+          message.say(`There was an error adding ${record} to the database.`);
+          console.log(`An error occurred adding a ${record.name} to the database:`, e);
         }
-        if (isEmoji(object)) {
-          await registerOne({ conn: conn, guild: message.guild, entity: entity, reaction: object });
-          await conn.createQueryBuilder().relation(ReactionEntity, 'guild').of(object.id).set(object.guild.id);
-          await conn.createQueryBuilder().relation(GuildEntity, 'embeds').of(object.guild.id).add(object.id);
-          await message.say(`${object} was successfully registered!`);
-        }
-        if (isRole(object)) {
-          await registerOne({ conn: conn, guild: message.guild, entity: entity, role: object });
-          await conn.createQueryBuilder().relation(RoleEntity, 'guild').of(object.id).set(object.guild.id);
-          await conn.createQueryBuilder().relation(GuildEntity, 'embeds').of(object.guild.id).add(object.id);
-          await message.say(`${object} was successfully registered!`);
-        }
-      } catch (e) {
-        message.say(`There was an error adding ${object} to the database.`);
-        console.log(`An error occurred adding a ${recordType} to the database:`, e);
       }
-      return;
+      const edit = await guildView(conn, m.guild);
+      if (edit == null) {
+        return message.say(`There was an error creating a view for ${message.guild} ...`);
+      }
+      edit.setDescription('**Add Records**');
+      await view.edit(edit);
+
+      await message.say('Continue adding other records or enter `stop` to end the command.');
     });
+
     return null;
   }
 }
 
-async function filter(m: CommandoMessage, message: CommandoMessage, entity: string) {
+async function filter(m: CommandoMessage, message: CommandoMessage, conn: Connection) {
   if (m.author != message.author) return false;
-  if (m.content.toLowerCase() == 'cancel') return true;
-
-  switch (entity) {
-    case Entities.Channel: {
-      const channel = await parseChannel(m);
-      return channel instanceof TextChannel && isGuildChannel(channel, message.guild) ? true : false;
-    }
-    case Entities.Reaction: {
-      const emoji = await parseEmoji(m);
-      return emoji instanceof GuildEmoji && isGuildEmoji(emoji, message.guild) ? true : false;
-    }
-    default: {
-      const role = await parseRole(m);
-      return role instanceof Role && isGuildRole(role, message.guild) ? true : false;
-    }
-  }
+  if (m.content.toLowerCase() == 'stop') return true;
+  const records = await parser(m, conn);
+  return records == null || records.length == 0 ? false : true;
 }
 
-async function parseChannel(m: CommandoMessage) {
-  const id = CHANNEL_ID.test(m.content) ? (m.content.match(CHANNEL_ID) as string[])[0] : null;
-  const channel = id != null ? getGuildChannel(id, m.guild) : getGuildChannel(m.content, m.guild);
-  if (channel == null) {
-    await m.reply('This text channel does not exist in this server.');
+async function parser(m: CommandoMessage, conn: Connection) {
+  const entity = m.content.substr(0, m.content.indexOf(' '));
+  const inputs = m.content.substr(m.content.indexOf(' ') + 1).split(/ +/);
+
+  if (entity == '') {
+    m.say('No argument was provided ...');
     return null;
   }
 
-  if (!isTextChannel(channel)) {
-    await m.reply('Only text channels can be added.');
+  if (!options.some((o) => o == entity)) {
+    m.say('Invalid record type was provided.');
     return null;
   }
-  return channel;
-}
 
-async function parseEmoji(m: CommandoMessage) {
-  const id = EMOJI_ID.test(m.content) ? (m.content.match(EMOJI_ID) as string[])[0] : null;
-  const emoji = id != null ? getGuildEmoji(id, m.guild) : getGuildEmoji(m.content, m.guild);
-  if (emoji == null) {
-    await m.reply('This emoji does not exist in this server.');
-    return null;
+  const records = [];
+  for (const input of inputs) {
+    if (entity == Entities.Channel) {
+      const channel = getGuildChannel(input, m.guild);
+      if (isTextChannel(channel)) records.push(channel);
+    } else if (entity == Entities.Reaction) {
+      const reaction = getGuildEmoji(input, m.guild);
+      console.log(input, reaction);
+      if (reaction != null) records.push(reaction);
+    } else if (entity == Entities.Role) {
+      const role = getGuildRole(input, m.guild);
+      if (role != null) records.push(role);
+    }
   }
-  return emoji;
-}
 
-async function parseRole(m: CommandoMessage) {
-  const id = ROLE_ID.test(m.content) ? (m.content.match(ROLE_ID) as string[])[0] : null;
-  const role = id != null ? getGuildRole(id, m.guild) : getGuildRole(m.content, m.guild);
-  if (role == null) {
-    await m.reply('This role does not exist in this server.');
-    return null;
-  }
-  return role;
+  return records.filter(async (r) => {
+    if (r instanceof TextChannel) {
+      const channels = await conn
+        .getRepository(ChannelEntity)
+        .createQueryBuilder('c')
+        .where('c.id = :id', { id: r.id })
+        .andWhere('c.guildId = :guildId', { guildId: m.guild.id })
+        .getMany();
+      return !channels.some((c) => c.id == r.id);
+    } else if (r instanceof GuildEmoji) {
+      const reactions = await conn
+        .getRepository(ReactionEntity)
+        .createQueryBuilder('react')
+        .where('react.id = :id', { id: r.id })
+        .andWhere('react.guildId = :guildId', { guildId: m.guild.id })
+        .getMany();
+      return !reactions.some((react) => react.id == r.id);
+    } else {
+      const roles = await conn
+        .getRepository(RoleEntity)
+        .createQueryBuilder('role')
+        .where('role.id = :id', { id: r.id })
+        .andWhere('role.guildId = :guildId', { guildId: m.guild.id })
+        .getMany();
+      return !roles.some((role) => role.id == r.id);
+    }
+  });
 }

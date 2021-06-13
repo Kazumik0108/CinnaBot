@@ -1,4 +1,13 @@
-import { BaseEntity, Column, Entity, ManyToMany, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  BaseEntity,
+  Column,
+  Entity,
+  JoinTable,
+  ManyToMany,
+  ManyToOne,
+  OneToMany,
+  PrimaryGeneratedColumn
+} from 'typeorm';
 import { ChannelEntity, GuildEntity, ReactionEntity, RoleEntity } from '.';
 
 @Entity({ name: 'embeds' })
@@ -9,7 +18,7 @@ export class EmbedEntity extends BaseEntity {
   @Column()
   title!: string;
 
-  @ManyToOne(() => GuildEntity, (guild) => guild.embeds)
+  @ManyToOne(() => GuildEntity, (guild) => guild.embeds, { onDelete: 'CASCADE' })
   guild!: GuildEntity;
 
   @ManyToOne(() => ChannelEntity, (channel) => channel.embeds)
@@ -19,9 +28,10 @@ export class EmbedEntity extends BaseEntity {
   embed!: unknown;
 
   @ManyToMany(() => ReactionEntity, (reaction) => reaction.embeds)
+  @JoinTable()
   reactions!: ReactionEntity[];
 
-  @OneToMany(() => RoleEntity, (role) => role.embed, { onDelete: 'CASCADE', onUpdate: 'CASCADE' })
+  @OneToMany(() => RoleEntity, (role) => role.embed, { onUpdate: 'CASCADE' })
   roles!: RoleEntity[];
 
   getEmbed = () => this.embed;

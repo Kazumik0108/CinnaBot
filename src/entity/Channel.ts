@@ -5,10 +5,10 @@ import { getGuildChannel } from '../lib/utils/guild/channel';
 
 @Entity({ name: 'channels' })
 export class ChannelEntity extends Base {
-  @ManyToOne(() => GuildEntity, (guild) => guild.channels)
+  @ManyToOne(() => GuildEntity, (guild) => guild.channels, { onDelete: 'CASCADE' })
   guild!: GuildEntity;
 
-  @OneToMany(() => EmbedEntity, (embed) => embed.channel, { onDelete: 'CASCADE', onUpdate: 'CASCADE' })
+  @OneToMany(() => EmbedEntity, (embed) => embed.channel)
   embeds!: EmbedEntity[];
 
   getChannel = (guild: Guild) => getGuildChannel(this.id, guild) as GuildChannel;

@@ -1,7 +1,9 @@
 import { Guild, Role } from 'discord.js';
+import { ROLE_ID } from '../../common/regex';
 
 export function getGuildRole(property: string, guild: Guild) {
-  const role = guild.roles.cache.find((r) => r.id == property || r.name == property);
+  const input = ROLE_ID.test(property) ? (property.match(ROLE_ID) as string[])[0] : property;
+  const role = guild.roles.cache.find((r) => r.id == input || r.name == input);
   return role != undefined ? role : null;
 }
 

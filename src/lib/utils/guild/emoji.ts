@@ -1,7 +1,9 @@
 import { Guild, GuildEmoji } from 'discord.js';
+import { EMOJI_ID } from '../../common/regex';
 
 export function getGuildEmoji(property: string, guild: Guild) {
-  const emoji = guild.emojis.cache.find((e) => e.id == property || e.name == property);
+  const input = EMOJI_ID.test(property) ? (property.match(EMOJI_ID) as string[])[0] : property;
+  const emoji = guild.emojis.cache.find((e) => e.id == input || e.name == input);
   return emoji != undefined ? emoji : null;
 }
 

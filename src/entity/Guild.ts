@@ -8,22 +8,16 @@ export class GuildEntity extends Base {
   @Column({ default: '+' })
   prefix!: string;
 
-  @OneToMany(() => ChannelEntity, (channel) => channel.guild, {
-    onDelete: 'CASCADE',
-    onUpdate: 'CASCADE',
-  })
+  @OneToMany(() => ChannelEntity, (channel) => channel.guild, { onUpdate: 'CASCADE' })
   channels!: ChannelEntity[];
 
-  @OneToMany(() => EmbedEntity, (embed) => embed.guild, { onDelete: 'CASCADE', onUpdate: 'CASCADE' })
+  @OneToMany(() => EmbedEntity, (embed) => embed.guild, { onUpdate: 'CASCADE' })
   embeds!: EmbedEntity[];
 
-  @OneToMany(() => ReactionEntity, (reaction) => reaction.guild, {
-    onDelete: 'CASCADE',
-    onUpdate: 'CASCADE',
-  })
+  @OneToMany(() => ReactionEntity, (reaction) => reaction.guild, { onUpdate: 'CASCADE' })
   reactions!: ReactionEntity[];
 
-  @OneToMany(() => RoleEntity, (role) => role.guild, { onDelete: 'CASCADE', onUpdate: 'CASCADE' })
+  @OneToMany(() => RoleEntity, (role) => role.guild, { onUpdate: 'CASCADE' })
   roles!: RoleEntity[];
 
   getGuild = (client: Client) => <Guild>getGuild(this.id, client);

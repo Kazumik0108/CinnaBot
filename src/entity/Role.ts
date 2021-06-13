@@ -6,7 +6,7 @@ import { getGuildRole } from '../lib/utils/guild/role';
 
 @Entity({ name: 'roles' })
 export class RoleEntity extends Base {
-  @ManyToOne(() => GuildEntity, (guild) => guild.roles)
+  @ManyToOne(() => GuildEntity, (guild) => guild.roles, { onDelete: 'CASCADE' })
   guild!: GuildEntity;
 
   @Column({ default: false })
