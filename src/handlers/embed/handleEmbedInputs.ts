@@ -5,7 +5,7 @@ import isImageUrl from 'is-image-url';
 import { EmbedInputs } from '../../lib/common/enums';
 import { sleep } from '../../lib/utils/collector/sleep';
 import { hexColorParser } from '../../lib/utils/color/parseHexColor';
-import { getGuildMember } from '../../lib/utils/guild/getGuildMember';
+import { getGuildMember } from '../../lib/utils/guild/member';
 
 const collectorInputs = (Object.keys(EmbedInputs) as string[]).concat(['next', 'end', 'json']);
 
