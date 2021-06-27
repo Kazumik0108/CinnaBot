@@ -7,17 +7,11 @@ import { ConnectionClient, ConnectionCommand } from '../../lib/common/classes';
 import { Entities } from '../../lib/common/enums';
 import { ReactionOptionsYesNo } from '../../lib/common/interfaces';
 import { CHANNEL_ID, EMOJI_ID, ROLE_ID } from '../../lib/common/regex';
-import {
-  getRepository,
-  isChannelRepo,
-  isEmbedRepo,
-  isGuildRepo,
-  isReactionRepo,
-  isRoleRepo
-} from '../../lib/database/getRepository';
+import { registerGuild } from '../../lib/database/register';
+import * as repository from '../../lib/database/repository';
 import { selectOneByID, selectOneByName } from '../../lib/database/select';
-import { validateByID } from '../../lib/database/validate';
-import { guildView } from '../../lib/database/view';
+import { createGuildView } from '../../lib/database/view';
+import { hasRecords } from '../../lib/utils/database/records';
 
 const reactions: ReactionOptionsYesNo = {
   yes: '✅',
@@ -41,18 +35,14 @@ export default class deleteRecord extends ConnectionCommand {
 
   async run(message: CommandoMessage) {
     const conn = this.client.conn;
-
-    const exists = await validateByID(conn, message.guild, Entities.Guild);
-    if (!exists) {
-      message.reply(`${message.guild} does not exist in the database. Try registering it first.`);
+    await registerGuild(conn, message.guild);
+    const record = selectOneByID(conn, message.guild, Entities.Guild);
+    if (record instanceof GuildEntity && (await hasRecords(record))) {
+      message.say('There are no valid records to delete from this guild..');
       return null;
     }
-
-    const embed = await guildView(conn, message.guild);
-    if (embed == null) {
-      message.say(`There was an error creating a view for ${message.guild} ...`);
-      return null;
-    }
+    const embed = await createGuildView(conn, message.guild);
+    if (embed == null) return message.say(`There was an error creating a view for ${message.guild} ...`);
     embed.setDescription('**Delete Records**');
 
     const prompt = stripIndents`
@@ -91,26 +81,26 @@ export default class deleteRecord extends ConnectionCommand {
         | RoleEntity
       )[];
 
-      const repo = getRepository(conn, entity as string);
+      const repo = repository.getRepository(conn, entity as string);
       if (repo == null) return;
 
       const names = `\`${records.map((r) => (r as Base).name || (r as EmbedEntity).title).join('`, `')}\``;
       try {
-        if (isChannelRepo(repo)) {
+        if (repository.isChannelRepo(repo)) {
           repo.remove(records as ChannelEntity[]);
           await m.say(
             `Text channel(s) ${names} have been removed. Continue removing other records or enter \`stop\` to end the command.`,
           );
         }
 
-        if (isEmbedRepo(repo)) {
+        if (repository.isEmbedRepo(repo)) {
           repo.remove(records as EmbedEntity[]);
           await m.say(
             `Embed message(s) ${names} have been removed. Continue removing other records or enter \`stop\` to end the command.`,
           );
         }
 
-        if (isGuildRepo(repo)) {
+        if (repository.isGuildRepo(repo)) {
           const reply = await m.reply(
             `This will remove ${m.guild} and all associated records from the database. This action cannot be undone. Are you sure you want to delete it?`,
           );
@@ -139,14 +129,14 @@ export default class deleteRecord extends ConnectionCommand {
             });
         }
 
-        if (isReactionRepo(repo)) {
+        if (repository.isReactionRepo(repo)) {
           repo.remove(records as ReactionEntity[]);
           await m.say(
             `Reaction(s) ${names} have been removed. Continue removing other records or enter \`stop\` to end the command.`,
           );
         }
 
-        if (isRoleRepo(repo)) {
+        if (repository.isRoleRepo(repo)) {
           repo.remove(records as RoleEntity[]);
           await m.say(
             `Role(s) ${names} have been removed. Continue removing other records or enter \`stop\` to end the command.`,
@@ -157,11 +147,10 @@ export default class deleteRecord extends ConnectionCommand {
       }
 
       const edit =
-        (await guildView(conn, m.guild))?.setDescription('**Delete Records**') ??
+        (await createGuildView(conn, m.guild))?.setDescription('**Delete Records**') ??
         new MessageEmbed().setTitle(m.guild.name).setDescription('Deleted from database.');
       await view.edit(edit);
     });
-
     return null;
   }
 }

@@ -1,64 +1,64 @@
 import { Guild, GuildEmoji, MessageEmbed, Role, TextChannel } from 'discord.js';
 import { Connection } from 'typeorm';
-import { getRepository, isChannelRepo, isEmbedRepo, isGuildRepo, isReactionRepo, isRoleRepo } from './getRepository';
-import { validateByID } from './validate';
+import { Entities } from '../common/enums';
+import { getRepository, isChannelRepo, isEmbedRepo, isGuildRepo, isReactionRepo, isRoleRepo } from './repository';
+import { validateChannel, validateEmbed, validateGuild, validateReaction, validateRole } from './validate';
 
-interface RegisterArgs {
-  conn: Connection;
-  guild: Guild;
-  entity: string;
-  channel?: TextChannel;
-  embed?: MessageEmbed;
-  reaction?: GuildEmoji;
-  role?: Role;
+export async function registerGuild(conn: Connection, guild: Guild) {
+  const exists = await validateGuild(conn, guild);
+  if (exists) return null;
+
+  const repo = getRepository(conn, Entities.Guild);
+  if (repo != null && isGuildRepo(repo)) {
+    return await repo.createQueryBuilder().insert().values({ id: guild.id, name: guild.name }).execute();
+  }
+  return null;
 }
 
-export async function registerOne({ conn, guild, entity, channel, embed, reaction, role }: RegisterArgs) {
-  const repo = getRepository(conn, entity);
-  if (repo == null) return;
+export async function registerChannel(conn: Connection, channel: TextChannel) {
+  const exists = await validateChannel(conn, channel);
+  if (exists) return null;
 
-  if (isChannelRepo(repo)) {
-    if (channel == undefined) return console.log('A guild text channel must be provided to register a channel record.');
-    const exists = await validateByID(conn, guild, entity, channel.id);
-    if (exists) return console.log('This text channel record exists already.');
-    await repo.createQueryBuilder().insert().values({ id: channel.id, name: channel.name }).execute();
-    return;
+  const repo = getRepository(conn, Entities.Channel);
+  if (repo != null && isChannelRepo(repo)) {
+    return await repo.createQueryBuilder().insert().values({ id: channel.id, name: channel.name }).execute();
   }
+  return null;
+}
 
-  if (isEmbedRepo(repo)) {
-    if (channel == undefined || embed == undefined) {
-      return console.log('A guild text channel and embed object must be provided to register an embed record.');
-    }
-    const exists = await validateByID(conn, guild, entity, <string>embed.title);
-    if (exists) return console.log('This embed message record exists already.');
-    await repo
+export async function registerReaction(conn: Connection, reaction: GuildEmoji) {
+  const exists = await validateReaction(conn, reaction);
+  if (exists) return null;
+
+  const repo = getRepository(conn, Entities.Reaction);
+  if (repo != null && isReactionRepo(repo)) {
+    return await repo.createQueryBuilder().insert().values({ id: reaction.id, name: reaction.name }).execute();
+  }
+  return null;
+}
+
+export async function registerRole(conn: Connection, role: Role) {
+  const exists = await validateRole(conn, role);
+  if (exists) return null;
+
+  const repo = getRepository(conn, Entities.Role);
+  if (repo != null && isRoleRepo(repo)) {
+    return await repo.createQueryBuilder().insert().values({ id: role.id, name: role.name }).execute();
+  }
+  return null;
+}
+
+export async function registerEmbed(conn: Connection, guild: Guild, embed: MessageEmbed) {
+  const exists = await validateEmbed(conn, guild, embed);
+  if (exists) return null;
+
+  const repo = getRepository(conn, Entities.Embed);
+  if (repo != null && isEmbedRepo(repo)) {
+    return await repo
       .createQueryBuilder()
       .insert()
-      .values({ title: <string>embed.title, embed: embed })
+      .values({ title: embed.title as string, embed: embed })
       .execute();
-    return;
   }
-
-  if (isGuildRepo(repo)) {
-    const exists = await validateByID(conn, guild, entity);
-    if (exists) return console.log('This guild record exists already.');
-    await repo.createQueryBuilder().insert().values({ id: guild.id, name: guild.name }).execute();
-    return;
-  }
-
-  if (isReactionRepo(repo)) {
-    if (reaction == undefined) return console.log('A guild emoji must be provided to register a reaction record.');
-    const exists = await validateByID(conn, guild, entity, reaction.id);
-    if (exists) return console.log('This reaction record exists already.');
-    await repo.createQueryBuilder().insert().values({ id: reaction.id, name: reaction.name }).execute();
-    return;
-  }
-
-  if (isRoleRepo(repo)) {
-    if (role == undefined) return console.log('A guild role must be provided to register a role record.');
-    const exists = await validateByID(conn, guild, entity, role.id);
-    if (exists) return console.log('This role record exists already.');
-    await repo.createQueryBuilder().insert().values({ id: role.id, name: role.name }).execute();
-    return;
-  }
+  return null;
 }

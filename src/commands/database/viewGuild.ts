@@ -1,8 +1,6 @@
 import { CommandoGuild, CommandoMessage } from 'discord.js-commando';
 import { ConnectionClient, ConnectionCommand } from '../../lib/common/classes';
-import { Entities } from '../../lib/common/enums';
-import { validateByID } from '../../lib/database/validate';
-import { guildView } from '../../lib/database/view';
+import { createGuildView } from '../../lib/database/view';
 
 export default class viewGuild extends ConnectionCommand {
   constructor(client: ConnectionClient) {
@@ -18,20 +16,11 @@ export default class viewGuild extends ConnectionCommand {
 
   async run(message: CommandoMessage) {
     const conn = this.client.conn;
-    const guild = this.client.owners.includes(message.author) ? await getGuildFromOwner(message) : message.guild;
+    const guild = this.client.owners.includes(message.author)
+      ? (await getGuildFromOwner(message)) ?? message.guild
+      : message.guild;
 
-    if (guild == null) {
-      message.say('Cancelling the command ...');
-      return null;
-    }
-
-    const exists = await validateByID(conn, guild, Entities.Guild);
-    if (!exists) {
-      message.reply(`${guild} does not exist in the database. Try registering it first.`);
-      return null;
-    }
-
-    const embed = await guildView(conn, guild);
+    const embed = await createGuildView(conn, guild);
     if (embed == null) {
       message.reply(`There was an error selecting ${message.guild} from the database ...`);
       return null;

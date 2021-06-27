@@ -92,7 +92,7 @@ export enum EmbedInputs {
   color = 'color',
   image = 'image',
   thumbnail = 'thumbnail',
-  json = 'json',
+  // json = 'json',
 }
 
 export enum Entities {
@@ -101,4 +101,11 @@ export enum Entities {
   Guild = 'guild',
   Reaction = 'reaction',
   Role = 'role',
+}
+
+export enum GuildRelations {
+  channel = 'Channels',
+  embed = 'Embed Messages',
+  reaction = 'Reactions',
+  role = 'Roles',
 }

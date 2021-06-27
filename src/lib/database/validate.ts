@@ -1,43 +1,68 @@
-import { Guild } from 'discord.js';
+import { Guild, GuildEmoji, MessageEmbed, Role, TextChannel } from 'discord.js';
 import { Connection } from 'typeorm';
-import { getRepository, isEmbedRepo, isGuildRepo } from './getRepository';
+import { Entities } from '../common/enums';
+import { getRepository, isChannelRepo, isEmbedRepo, isGuildRepo, isReactionRepo, isRoleRepo } from './repository';
 
-export async function validateByID(conn: Connection, guild: Guild, entity: string, id?: string, title?: string) {
-  const repo = getRepository(conn, entity);
-  if (repo == null) {
-    console.log('Invalid repository provided for validate record: ', entity);
-    return false;
-  }
-
-  if (isGuildRepo(repo)) {
+export async function validateGuild(conn: Connection, guild: Guild) {
+  const repo = getRepository(conn, Entities.Guild);
+  if (repo != null && isGuildRepo(repo)) {
     return (await repo.createQueryBuilder('e').where('e.id = :id', { id: guild.id }).getCount()) > 0;
   }
+  return false;
+}
 
-  if (isEmbedRepo(repo)) {
-    if (title == undefined) {
-      console.log('No title was provided to validate embed record.');
-      return false;
-    }
-
+export async function validateChannel(conn: Connection, channel: TextChannel) {
+  const repo = getRepository(conn, Entities.Channel);
+  if (repo != null && isChannelRepo(repo)) {
     return (
       (await repo
         .createQueryBuilder('e')
-        .where('e.title = :title', { title: title })
+        .where('e.id = :id', { id: channel.id })
+        .andWhere('e.guildId = :guildId', { guildId: channel.guild.id })
+        .getCount()) > 0
+    );
+  }
+  return false;
+}
+
+export async function validateEmbed(conn: Connection, guild: Guild, embed: MessageEmbed) {
+  const repo = getRepository(conn, Entities.Embed);
+  if (repo != null && isEmbedRepo(repo)) {
+    return (
+      (await repo
+        .createQueryBuilder('e')
+        .where('e.title = :title', { title: embed.title as string })
         .andWhere('e.guildId = :guildId', { guildId: guild.id })
         .getCount()) > 0
     );
   }
+  return false;
+}
 
-  if (id == undefined) {
-    console.log('No id was provided to validate record.');
-    return false;
+export async function validateReaction(conn: Connection, reaction: GuildEmoji) {
+  const repo = getRepository(conn, Entities.Reaction);
+  if (repo != null && isReactionRepo(repo)) {
+    return (
+      (await repo
+        .createQueryBuilder('e')
+        .where('e.id = :id', { id: reaction.id })
+        .andWhere('e.guildId = :guildId', { guildId: reaction.guild.id })
+        .getCount()) > 0
+    );
   }
+  return false;
+}
 
-  return (
-    (await repo
-      .createQueryBuilder('e')
-      .where('e.id = :id', { id: id })
-      .andWhere('e.guildId = :guildId', { guildId: guild.id })
-      .getCount()) > 0
-  );
+export async function validateRole(conn: Connection, role: Role) {
+  const repo = getRepository(conn, Entities.Role);
+  if (repo != null && isRoleRepo(repo)) {
+    return (
+      (await repo
+        .createQueryBuilder('e')
+        .where('e.id = :id', { id: role.id })
+        .andWhere('e.guildId = :guildId', { guildId: role.guild.id })
+        .getCount()) > 0
+    );
+  }
+  return false;
 }

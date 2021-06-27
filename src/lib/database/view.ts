@@ -1,56 +1,75 @@
-import { Guild, MessageEmbed } from 'discord.js';
+import { EmbedFieldData, Guild, MessageEmbed } from 'discord.js';
 import { Connection } from 'typeorm';
 import { GuildEntity } from '../../entity';
-import { Entities } from '../common/enums';
-import { isGuildEntity } from './getEntity';
+import { Entities, GuildRelations } from '../common/enums';
+import { GuildViewArgs, GuildViewOptions } from '../common/interfaces';
+import { isGuildEntity } from './entity';
+import { load } from './load';
 import { selectOneByID } from './select';
 
-interface GuildViewArgs {
-  guild: string;
-  channels: string;
-  embeds: string;
-  reactions: string;
-  roles: string;
-}
+const none = '`No entries`';
 
-export async function guildView(conn: Connection, guild: Guild) {
-  const entity = await selectOneByID(conn, guild, Entities.Guild);
-  if (entity == undefined || !isGuildEntity(entity)) return null;
+export async function createGuildView(conn: Connection, guild: Guild, options?: GuildViewOptions) {
+  const record = await selectOneByID(conn, guild, Entities.Guild);
+  if (record == undefined || !isGuildEntity(record)) return null;
 
-  entity.channels = await conn.createQueryBuilder().relation(GuildEntity, 'channels').of(guild.id).loadMany();
-  entity.embeds = await conn.createQueryBuilder().relation(GuildEntity, 'embeds').of(guild.id).loadMany();
-  entity.reactions = await conn.createQueryBuilder().relation(GuildEntity, 'reactions').of(guild.id).loadMany();
-  entity.roles = await conn.createQueryBuilder().relation(GuildEntity, 'roles').of(guild.id).loadMany();
-
+  await load(conn, record, options?.ignore);
   const view: GuildViewArgs = {
-    guild: entity.name,
-    channels: entity.channels.map((c) => c.getChannel(guild)).join('\n'),
-    embeds: entity.embeds.map((e) => e.title).join('\n'),
-    reactions: entity.reactions.map((r) => `${r.getReaction(guild)} \\${r.getReaction(guild)}`).join('\n'),
-    roles: entity.roles.map((r) => r.getRole(guild)).join('\n'),
+    guild: guildName(record),
+    channels: guildChannels(record, guild) || none,
+    embeds: guildEmbedTitles(record) || none,
+    reactions: guildReactions(record, guild) || none,
+    roles: guildRoles(record, guild) || none,
   };
 
-  const none = '`No entries`';
+  let fields: EmbedFieldData[] = [
+    {
+      name: GuildRelations.channel,
+      value: view.channels,
+    },
+    {
+      name: GuildRelations.embed,
+      value: view.embeds,
+    },
+    {
+      name: GuildRelations.reaction,
+      value: view.reactions,
+    },
+    {
+      name: GuildRelations.role,
+      value: view.roles,
+    },
+  ];
+
+  if (options != undefined && options.ignore != undefined) {
+    const ignore = options.ignore;
+    fields = fields.filter((f) => ignore.some((i) => i != f.name));
+  }
+
   const embed = new MessageEmbed()
     .setTitle(view.guild)
+    .setDescription(options?.description || '**__Records__**')
     .setThumbnail(guild.iconURL() as string)
-    .addFields([
-      {
-        name: 'Channels',
-        value: view.channels || none,
-      },
-      {
-        name: 'Embed Messages',
-        value: view.embeds || none,
-      },
-      {
-        name: 'Reactions',
-        value: view.reactions || none,
-      },
-      {
-        name: 'Roles',
-        value: view.roles || none,
-      },
-    ]);
+    .addFields(fields);
   return embed;
+}
+
+function guildName(record: GuildEntity) {
+  return record.name;
+}
+
+function guildChannels(record: GuildEntity, guild: Guild) {
+  return record.channels != undefined ? record.channels.map((c) => c.getChannel(guild)).join('\n') : null;
+}
+
+function guildEmbedTitles(record: GuildEntity) {
+  return record.embeds != undefined ? record.embeds.map((e) => e.title).join('\n') : null;
+}
+
+function guildReactions(record: GuildEntity, guild: Guild) {
+  return record.reactions != undefined ? record.reactions.map((r) => r.getReaction(guild)).join('\n') : null;
+}
+
+function guildRoles(record: GuildEntity, guild: Guild) {
+  return record.roles != undefined ? record.roles.map((r) => r.getRole(guild)).join('\n') : null;
 }

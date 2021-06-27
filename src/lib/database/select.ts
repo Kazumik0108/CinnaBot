@@ -1,6 +1,6 @@
 import { Guild } from 'discord.js';
 import { Connection } from 'typeorm';
-import { getRepository, isEmbedRepo, isGuildRepo } from './getRepository';
+import { getRepository, isEmbedRepo, isGuildRepo } from './repository';
 
 export async function selectOneByID(conn: Connection, guild: Guild, entity: string, id?: string) {
   const repo = getRepository(conn, entity);

@@ -4,14 +4,14 @@ import { EMOJI_ID } from '../../common/regex';
 export function getGuildEmoji(property: string, guild: Guild | Collection<string, Guild>, exact = true) {
   const input = EMOJI_ID.test(property) ? (property.match(EMOJI_ID) as string[])[0] : property;
   if (guild instanceof Guild) {
-    const emoji = guild.emojis.cache.find((e) =>
-      e.id == input || exact == true ? e.name == input : e.name.toLowerCase() == input.toLowerCase(),
+    const emoji = guild.emojis.cache.find(
+      (e) => e.id == input || (exact == true ? e.name == input : e.name.toLowerCase() == input.toLowerCase()),
     );
     return emoji != undefined ? emoji : null;
   }
   const emoji = guild
     .flatMap((g) => g.emojis.cache)
-    .find((e) => (e.id == input || exact == true ? e.name == input : e.name.toLowerCase() == input.toLowerCase()));
+    .find((e) => e.id == input || (exact == true ? e.name == input : e.name.toLowerCase() == input.toLowerCase()));
   return emoji != undefined ? emoji : null;
 }
 

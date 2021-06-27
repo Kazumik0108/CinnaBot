@@ -16,6 +16,10 @@ export function isChannel(channel: unknown): channel is GuildChannel {
   return channel instanceof GuildChannel;
 }
 
+export function isGuildChannelID(id: string, guild: Guild) {
+  return guild.channels.cache.find((c) => c.id == id);
+}
+
 export function isGuildChannel(channel: unknown, guild: Guild): channel is GuildChannel {
   if (!isChannel(channel)) return false;
   const channels = guild.channels.cache;
